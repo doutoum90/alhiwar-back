@@ -33,8 +33,6 @@ import { AuthUser } from "src/auth/auth.controller";
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
 
-  /* ======================= STATS ======================= */
-
   @ApiOperation({ summary: "Users statistics" })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -44,8 +42,6 @@ export class UsersController {
   stats(@Query("period") period?: string) {
     return this.usersService.getStatistics(period);
   }
-
-  /* ================== PROFILE (ME) ================== */
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -79,8 +75,6 @@ export class UsersController {
     return this.usersService.remove(user.userId);
   }
 
-  /* ================== LIST/SEARCH ================== */
-
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions("users.view")
@@ -89,8 +83,6 @@ export class UsersController {
     if (q.search && q.search.trim().length > 0) return this.usersService.searchUsers(q);
     return this.usersService.findAll();
   }
-
-  /* ================== WORKFLOW (ADMIN) ================== */
 
   @ApiOperation({ summary: "Users review queue (in_review)" })
   @ApiBearerAuth()
@@ -140,8 +132,6 @@ export class UsersController {
   archive(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() me: AuthUser) {
     return this.usersService.archive(id, me.userId);
   }
-
-  /* ================== ADMIN CRUD ================== */
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)

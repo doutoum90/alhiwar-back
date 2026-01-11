@@ -18,9 +18,9 @@ import { PermissionsGuard } from "./guards/permissions.guard";
 export type AuthUser = {
   userId: string;
   email: string;
-  role?: UserRole;          // ancien role simple si tu le gardes
-  roles?: string[];       // RBAC roles keys
-  permissions?: string[]; // RBAC permissions keys
+  role?: UserRole;
+  roles?: string[];
+  permissions?: string[];
 };
 
 @ApiTags("Authentication")

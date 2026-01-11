@@ -14,7 +14,6 @@ import { UserRole } from "../entities/user.entity";
 import { cutoffFromPeriod } from "src/stats/period";
 import { AuthUser } from "src/auth/auth.controller";
 
-
 @Injectable()
 export class ArticlesService {
   constructor(
@@ -26,8 +25,6 @@ export class ArticlesService {
     const count = await this.repo.count({ where: { status: "in_review" as any } });
     return { count };
   }
-
-
 
   async getStatsSummary(period?: string) {
     const cutoff = cutoffFromPeriod(period);
@@ -53,7 +50,6 @@ export class ArticlesService {
       .select('COALESCE(SUM(a."commentsCount"), 0)::bigint', "sum")
       .getRawOne<{ sum: string }>();
 
-    // ✅ IMPORTANT: pas de "=" sur une date, on filtre la période
     const newArticlesInPeriod = await this.repo.count({
       where: { createdAt: MoreThanOrEqual(cutoff) },
     });
@@ -69,8 +65,6 @@ export class ArticlesService {
       newArticlesInPeriod,
     };
   }
-
-
 
   private isEditor(role?: UserRole) {
     return role === UserRole.ADMIN || role === UserRole.EDITOR_IN_CHIEF;
@@ -90,7 +84,6 @@ export class ArticlesService {
 
     const editor = this.isEditor(user?.role);
 
-    // ✅ Strict: journalist/author always draft
     const status: ArticleStatus = editor
       ? ((dto.status as ArticleStatus) ?? "draft")
       : "draft";
@@ -105,8 +98,6 @@ export class ArticlesService {
       categoryId: dto.categoryId,
       tags: dto.tags ?? [],
       publishedAt: status === "published" ? new Date() : null,
-
-      // workflow fields
       submittedAt: null,
       submittedById: null,
       reviewedAt: null,
@@ -167,26 +158,22 @@ export class ArticlesService {
     const editor = this.isEditor(user?.role);
     const userId = this.getUserId(user);
 
-    // ✅ ownership check (non-admin non-editor)
     if (!editor && user?.role !== UserRole.ADMIN) {
       if (a.authorId !== userId) {
         throw new ForbiddenException("You can only edit your own articles.");
       }
     }
 
-    // ✅ journalist/author cannot publish via update
     if (!editor && dto.status === "published") {
       throw new ForbiddenException("Publishing requires editor approval.");
     }
 
-    // ✅ journalist/author cannot edit when in_review or published (recommended)
     if (!editor && ["in_review", "published"].includes(a.status)) {
       throw new ForbiddenException("This article cannot be edited in its current state.");
     }
 
     if (dto.title && dto.title !== a.title) a.slug = this.generateSlug(dto.title);
 
-    // status transitions (editor only for publish)
     if (dto.status && dto.status !== a.status) {
       if (dto.status === "published" && !editor) {
         throw new ForbiddenException("Publishing requires editor approval.");
@@ -222,15 +209,12 @@ export class ArticlesService {
     return { ok: true };
   }
 
-  /* ================= Review workflow ================= */
-
   async submitForReview(articleId: string, user: any) {
     const a = await this.findOne(articleId);
 
     const userId = this.getUserId(user);
     const editor = this.isEditor(user?.role);
 
-    // ✅ allow editor/admin or owner
     if (!editor && user?.role !== UserRole.ADMIN && a.authorId !== userId) {
       throw new ForbiddenException("You can only submit your own articles.");
     }
@@ -294,8 +278,6 @@ export class ArticlesService {
 
     return this.repo.save(a);
   }
-
-  /* ================================================== */
 
   private generateSlug(title: string): string {
     return (

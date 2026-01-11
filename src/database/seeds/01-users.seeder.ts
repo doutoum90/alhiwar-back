@@ -1,4 +1,3 @@
-// src/database/seeds/01-users.seeder.ts
 import { AppDataSource } from "../data-source";
 import { User, UserRole, UserStatus, UserWorkflowStatus } from "../../entities/user.entity";
 import * as bcrypt from "bcrypt";
@@ -33,7 +32,6 @@ export class UsersSeeder {
     const P_USER = "User@2026!";
 
     const usersData: SeedUser[] = [
-      // Admins (published)
       {
         name: "Admin One",
         email: "admin1@blog-alhiwar.com",
@@ -57,7 +55,6 @@ export class UsersSeeder {
         isActive: true,
       },
 
-      // Editors (published)
       {
         name: "Editor One",
         email: "editor1@blog-alhiwar.com",
@@ -81,7 +78,6 @@ export class UsersSeeder {
         isActive: true,
       },
 
-      // Authors: mix (published/in_review/rejected)
       {
         name: "Author One",
         email: "author1@blog-alhiwar.com",
@@ -107,7 +103,6 @@ export class UsersSeeder {
         reviewComment: "Profile incomplete: missing bio and phone",
       },
 
-      // Journalists: in_review + draft
       {
         name: "Journalist One",
         email: "journalist1@blog-alhiwar.com",
@@ -131,7 +126,6 @@ export class UsersSeeder {
         isActive: true,
       },
 
-      // Normal users: draft + archived + suspended/inactive mix
       {
         name: "User One",
         email: "user1@blog-alhiwar.com",
@@ -170,7 +164,6 @@ export class UsersSeeder {
     let created = 0;
     let skipped = 0;
 
-    // Determine reviewer (admin1) for review fields
     const admin1Email = "admin1@blog-alhiwar.com";
     const admin1 = await repo.findOne({ where: { email: admin1Email } as any });
 
@@ -193,16 +186,12 @@ export class UsersSeeder {
         status: u.status,
         avatar: u.avatar,
         isActive: u.isActive,
-
         workflowStatus: u.workflowStatus,
-
         createdById: null,
-
         submittedAt:
           u.workflowStatus === UserWorkflowStatus.IN_REVIEW ? new Date(Date.now() - 1000 * 60 * 60 * 24) : null,
         submittedById:
           u.workflowStatus === UserWorkflowStatus.IN_REVIEW ? null : null,
-
         reviewedAt:
           [UserWorkflowStatus.PUBLISHED, UserWorkflowStatus.REJECTED, UserWorkflowStatus.ARCHIVED].includes(u.workflowStatus)
             ? new Date(Date.now() - 1000 * 60 * 60 * 12)
@@ -214,7 +203,6 @@ export class UsersSeeder {
         reviewComment:
           u.reviewComment ??
           (u.workflowStatus === UserWorkflowStatus.REJECTED ? "Rejected by reviewer" : null),
-
         isRejected: u.isRejected ?? (u.workflowStatus === UserWorkflowStatus.REJECTED),
       } as any);
 

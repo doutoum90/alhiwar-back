@@ -1,4 +1,3 @@
-// src/categories/categories.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseUUIDPipe } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { CategoriesService } from "./categories.service";
@@ -15,13 +14,11 @@ import { AuthUser } from "src/auth/auth.controller";
 @Controller("categories")
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) { }
-  /* ======================= PUBLIC ======================= */
   @ApiOperation({ summary: "Get published categories (public)" })
   @Get("published")
   getPublished() {
     return this.categoriesService.findPublished();
   }
-  /* ======================= STATS ======================= */
 
   @ApiOperation({ summary: "Categories statistics" })
   @ApiBearerAuth()
@@ -32,8 +29,6 @@ export class CategoriesController {
     return this.categoriesService.getStatistics();
   }
 
-  /* ======================= WORKFLOW ======================= */
-
   @ApiOperation({ summary: "Categories review queue (in_review)" })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -43,8 +38,6 @@ export class CategoriesController {
     return this.categoriesService.getReviewQueue();
   }
 
-  /* ======================= ADMIN CRUD (LIST) ======================= */
-
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions("categories.view")
@@ -52,7 +45,6 @@ export class CategoriesController {
   findAll() {
     return this.categoriesService.findAll();
   }
-  /* ======================= WORKFLOW (ACTIONS) ======================= */
 
   @ApiOperation({ summary: "Submit category for review (draft/rejected -> in_review)" })
   @ApiBearerAuth()
@@ -93,8 +85,6 @@ export class CategoriesController {
   archive(@Param("id", ParseUUIDPipe) id: string, @CurrentUser() me: AuthUser) {
     return this.categoriesService.archive(id, me.userId);
   }
-
-  /* ======================= ADMIN CRUD ======================= */
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
