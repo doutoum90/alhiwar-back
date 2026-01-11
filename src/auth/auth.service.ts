@@ -64,7 +64,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new NotFoundException('المستخدم غير موجود');
+      throw new NotFoundException('Utilisateur introuvable');
     }
 
     return user;
@@ -122,7 +122,7 @@ export class AuthService {
       }));
 
     if (!user || !user.passwordResetExpiresAt || user.passwordResetExpiresAt < new Date()) {
-      throw new UnauthorizedException('رمز إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية');
+      throw new UnauthorizedException('Token de reinitialisation invalide ou expire');
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -143,7 +143,7 @@ export class AuthService {
       }));
 
     if (!user) {
-      throw new UnauthorizedException('رمز التحقق من البريد الإلكتروني غير صالح');
+      throw new UnauthorizedException("Token de verification d'email invalide");
     }
 
     await this.userRepository.update(user.id, {
@@ -221,7 +221,7 @@ export class AuthService {
     if (!ok) return null;
 
     if (user.status !== UserStatus.ACTIVE || !user.isActive) {
-      throw new UnauthorizedException('الحساب غير نشط أو موقوف');
+      throw new UnauthorizedException('Compte inactif ou suspendu');
     }
 
     const { password: _pw, ...safeUser } = user;
@@ -231,7 +231,7 @@ export class AuthService {
   async login(loginDto: LoginDto, request?: Request) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     if (!user) {
-      throw new UnauthorizedException('بيانات تسجيل الدخول غير صحيحة');
+      throw new UnauthorizedException('Identifiants invalides');
     }
 
     const ip =
@@ -282,9 +282,9 @@ export class AuthService {
       where: { id: decoded.sub },
       select: ['id', 'email', 'name', 'role', 'status', 'avatar', 'isActive'],
     });
-    if (!user) throw new NotFoundException('المستخدم غير موجود');
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
     if (user.status !== UserStatus.ACTIVE || !user.isActive) {
-      throw new UnauthorizedException('الحساب غير نشط أو موقوف');
+      throw new UnauthorizedException('Compte inactif ou suspendu');
     }
 
     const payload = { sub: user.id, email: user.email, role: user.role, name: user.name };
@@ -302,7 +302,7 @@ export class AuthService {
     const existingUser = await this.userRepository.findOne({
       where: { email: registerDto.email.toLowerCase() }
     });
-    if (existingUser) throw new UnauthorizedException('البريد الإلكتروني مستخدم بالفعل');
+    if (existingUser) throw new UnauthorizedException("L'email est deja utilise");
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
     const rawVerificationToken = this.generateVerificationToken();
@@ -356,10 +356,10 @@ export class AuthService {
 
   async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
     const user = await this.userRepository.findOne({ where: { id: userId }, select: ['id', 'password'] });
-    if (!user) throw new NotFoundException('المستخدم غير موجود');
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
 
     const ok = await bcrypt.compare(dto.oldPassword, user.password);
-    if (!ok) throw new UnauthorizedException('كلمة المرور القديمة غير صحيحة');
+    if (!ok) throw new UnauthorizedException('Ancien mot de passe incorrect');
 
     const newHash = await bcrypt.hash(dto.newPassword, 10);
     await this.userRepository.update(userId, {

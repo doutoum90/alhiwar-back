@@ -37,7 +37,7 @@ export class AuthorsService {
     });
 
     if (existingUser) {
-      throw new ConflictException('مستخدم بهذا البريد الإلكتروني موجود بالفعل');
+      throw new ConflictException("Un utilisateur avec cet email existe deja");
     }
 
     const user = this.userRepository.create({
@@ -106,7 +106,7 @@ export class AuthorsService {
     });
 
     if (!user) {
-      throw new NotFoundException('المؤلف غير موجود');
+      throw new NotFoundException('Auteur introuvable');
     }
 
     return user;
@@ -124,7 +124,7 @@ export class AuthorsService {
     if (updateAuthorDto.email && updateAuthorDto.email !== user.email) {
       const existingUser = await this.findByEmail(updateAuthorDto.email);
       if (existingUser) {
-        throw new ConflictException('البريد الإلكتروني مستخدم بالفعل');
+        throw new ConflictException("L'email est deja utilise");
       }
     }
 
@@ -140,7 +140,7 @@ export class AuthorsService {
     });
 
     if (articlesCount > 0) {
-      throw new ForbiddenException('لا يمكن حذف مؤلف لديه مقالات منشورة');
+      throw new ForbiddenException('Impossible de supprimer un auteur avec des articles publies');
     }
 
     await this.userRepository.remove(user);
@@ -192,7 +192,7 @@ export class AuthorsService {
     const user = await this.findOne(id);
     
     if (changePasswordDto.oldPassword !== user.password) {
-      throw new UnauthorizedException('كلمة المرور القديمة غير صحيحة');
+      throw new UnauthorizedException('Ancien mot de passe incorrect');
     }
 
     await this.userRepository.update(id, {

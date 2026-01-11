@@ -2,38 +2,38 @@ import { IsNotEmpty, IsString, IsEmail, IsOptional, MaxLength } from 'class-vali
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateContactDto {
-  @ApiProperty({ example: 'أحمد محمد' })
-  @IsNotEmpty({ message: 'الاسم مطلوب' })
+  @ApiProperty({ example: 'Jean Dupont' })
+  @IsNotEmpty({ message: 'Le nom est requis' })
   @IsString()
-  @MaxLength(100, { message: 'الاسم يجب أن يكون أقل من 100 حرف' })
+  @MaxLength(100, { message: 'Le nom doit contenir moins de 100 caracteres' })
   name: string;
 
   @ApiProperty({ example: 'ahmed@example.com' })
-  @IsNotEmpty({ message: 'البريد الإلكتروني مطلوب' })
-  @IsEmail({}, { message: 'البريد الإلكتروني غير صحيح' })
-  @MaxLength(150, { message: 'البريد الإلكتروني طويل جداً' })
+  @IsNotEmpty({ message: "L'email est requis" })
+  @IsEmail({}, { message: "L'email est invalide" })
+  @MaxLength(150, { message: "L'email est trop long" })
   email: string;
 
-  @ApiProperty({ example: 'رسالة الاتصال...' })
-  @IsNotEmpty({ message: 'الرسالة مطلوبة' })
+  @ApiProperty({ example: 'Message de contact...' })
+  @IsNotEmpty({ message: 'Le message est requis' })
   @IsString()
   message: string;
 
-  @ApiProperty({ example: 'استفسار عام', required: false })
+  @ApiProperty({ example: 'Demande generale', required: false })
   @IsOptional()
   @IsString()
-  @MaxLength(50, { message: 'الموضوع يجب أن يكون أقل من 50 حرف' })
+  @MaxLength(50, { message: 'Le sujet doit contenir moins de 50 caracteres' })
   subject?: string;
 
   @ApiProperty({ example: '+235123456789', required: false })
   @IsOptional()
   @IsString()
-  @MaxLength(20, { message: 'رقم الهاتف طويل جداً' })
+  @MaxLength(20, { message: 'Le numero de telephone est trop long' })
   phone?: string;
 
-  @ApiProperty({ example: 'شركة المثال', required: false })
+  @ApiProperty({ example: 'Exemple SARL', required: false })
   @IsOptional()
   @IsString()
-  @MaxLength(100, { message: 'اسم الشركة طويل جداً' })
+  @MaxLength(100, { message: 'Le nom de la societe est trop long' })
   company?: string;
 }

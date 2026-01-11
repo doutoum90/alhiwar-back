@@ -123,7 +123,7 @@ export class ContactService {
   async findOne(id: string): Promise<Contact> {
     const contact = await this.contactRepository.findOne({ where: { id } });
     if (!contact) {
-      throw new NotFoundException('الرسالة غير موجودة');
+      throw new NotFoundException('Message introuvable');
     }
     return contact;
   }

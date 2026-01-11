@@ -3,19 +3,19 @@ import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '../../entities/user.entity';
 
 export class CreateAuthorDto {
-  @ApiProperty({ example: 'أحمد محمد' })
-  @IsNotEmpty({ message: 'الاسم مطلوب' })
+  @ApiProperty({ example: 'Jean Dupont' })
+  @IsNotEmpty({ message: 'Le nom est requis' })
   @IsString()
   name: string;
 
   @ApiProperty({ example: 'ahmed@alhiwar.com' })
-  @IsNotEmpty({ message: 'البريد الإلكتروني مطلوب' })
-  @IsEmail({}, { message: 'البريد الإلكتروني غير صحيح' })
+  @IsNotEmpty({ message: "L'email est requis" })
+  @IsEmail({}, { message: "L'email est invalide" })
   email: string;
 
   @ApiProperty({ example: 'password123' })
-  @IsNotEmpty({ message: 'كلمة المرور مطلوبة' })
-  @MinLength(6, { message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' })
+  @IsNotEmpty({ message: 'Le mot de passe est requis' })
+  @MinLength(6, { message: 'Le mot de passe doit contenir au moins 6 caracteres' })
   password: string;
 
   @ApiProperty({ enum: UserRole, default: UserRole.AUTHOR })
@@ -28,7 +28,7 @@ export class CreateAuthorDto {
   @IsString()
   avatar?: string;
 
-  @ApiProperty({ example: 'كاتب ومحرر في جريدة الحوار', required: false })
+  @ApiProperty({ example: 'Auteur et editeur', required: false })
   @IsOptional()
   @IsString()
   bio?: string;

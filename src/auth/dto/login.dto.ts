@@ -1,12 +1,12 @@
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class LoginDto {
-  @IsEmail({}, { message: 'البريد الإلكتروني غير صحيح' })
-  @IsNotEmpty({ message: 'البريد الإلكتروني مطلوب' })
+  @IsEmail({}, { message: "L'email est invalide" })
+  @IsNotEmpty({ message: "L'email est requis" })
   email: string;
 
-  @IsString({ message: 'كلمة المرور يجب أن تكون نص' })
-  @IsNotEmpty({ message: 'كلمة المرور مطلوبة' })
-  @MinLength(6, { message: 'كلمة المرور يجب أن تكون على الأقل 6 أحرف' })
+  @IsString({ message: 'Le mot de passe doit etre une chaine' })
+  @IsNotEmpty({ message: 'Le mot de passe est requis' })
+  @MinLength(6, { message: 'Le mot de passe doit contenir au moins 6 caracteres' })
   password: string;
 }
