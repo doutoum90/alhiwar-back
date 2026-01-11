@@ -1,9 +1,7 @@
-// src/database/seeds/00-permissions.seeder.ts
 import { AppDataSource } from "../data-source";
 import { Permission } from "../../entities/permission.entity";
 
 export const PERMISSIONS = [
-  // ===================== USERS =====================
   { key: "users.view", label: "View users", group: "Users" },
   { key: "users.create", label: "Create users", group: "Users" },
   { key: "users.update", label: "Update users", group: "Users" },
@@ -12,14 +10,12 @@ export const PERMISSIONS = [
   { key: "users.roles.assign", label: "Assign roles/permissions", group: "Users" },
   { key: "users.stats.view", label: "View users stats", group: "Stats" },
 
-  // workflow users
   { key: "users.submit", label: "Submit user for review", group: "Users Workflow" },
   { key: "users.review.view", label: "View users review queue", group: "Users Workflow" },
   { key: "users.review.approve", label: "Approve user", group: "Users Workflow" },
   { key: "users.review.reject", label: "Reject user", group: "Users Workflow" },
   { key: "users.archive", label: "Archive user", group: "Users Workflow" },
 
-  // ===================== AUTHORS =====================
   { key: "authors.view", label: "View authors", group: "Users" },
   { key: "authors.create", label: "Create author", group: "Users" },
   { key: "authors.update", label: "Update author", group: "Users" },
@@ -30,10 +26,8 @@ export const PERMISSIONS = [
   { key: "authors.suspend", label: "Suspend author", group: "Users" },
   { key: "authors.activate", label: "Activate author", group: "Users" },
 
-  // ===================== AUTH =====================
   { key: "auth.stats.view", label: "View auth stats", group: "Stats" },
 
-  // ===================== ARTICLES =====================
   { key: "articles.view", label: "View articles", group: "Articles" },
   { key: "articles.create", label: "Create articles", group: "Articles" },
   { key: "articles.update", label: "Update articles", group: "Articles" },
@@ -50,7 +44,6 @@ export const PERMISSIONS = [
 
   { key: "articles.stats.view", label: "View articles stats", group: "Stats" },
 
-  // ===================== CATEGORIES =====================
   { key: "categories.view", label: "View categories", group: "Categories" },
   { key: "categories.create", label: "Create categories", group: "Categories" },
   { key: "categories.update", label: "Update categories", group: "Categories" },
@@ -58,31 +51,26 @@ export const PERMISSIONS = [
   { key: "categories.reorder", label: "Reorder categories", group: "Categories" },
   { key: "categories.stats.view", label: "View categories stats", group: "Stats" },
 
-  // workflow categories
   { key: "categories.submit", label: "Submit category for review", group: "Categories Workflow" },
   { key: "categories.review.view", label: "View categories review queue", group: "Categories Workflow" },
   { key: "categories.review.approve", label: "Approve category", group: "Categories Workflow" },
   { key: "categories.review.reject", label: "Reject category", group: "Categories Workflow" },
   { key: "categories.archive", label: "Archive category", group: "Categories Workflow" },
 
-  // ===================== MEDIA =====================
   { key: "media.view", label: "View media", group: "Media" },
   { key: "media.upload", label: "Upload media", group: "Media" },
   { key: "media.update", label: "Update media", group: "Media" },
   { key: "media.delete", label: "Delete media", group: "Media" },
   { key: "media.reorder", label: "Reorder media", group: "Media" },
 
-  // ===================== COMMENTS =====================
   { key: "comments.view", label: "View comments", group: "Comments" },
   { key: "comments.create", label: "Create comment", group: "Comments" },
   { key: "comments.delete", label: "Delete comment", group: "Comments" },
   { key: "comments.moderate", label: "Moderate comment", group: "Comments" },
 
-  // ===================== LIKES =====================
   { key: "likes.toggle", label: "Like/Unlike", group: "Engagement" },
   { key: "likes.view", label: "View likes", group: "Engagement" },
 
-  // ===================== ADS =====================
   { key: "ads.view", label: "View ads", group: "Ads" },
   { key: "ads.create", label: "Create ads", group: "Ads" },
   { key: "ads.update", label: "Update ads", group: "Ads" },
@@ -90,14 +78,12 @@ export const PERMISSIONS = [
   { key: "ads.activate", label: "Activate/Deactivate ads", group: "Ads" },
   { key: "ads.stats.view", label: "View ads stats", group: "Stats" },
 
-  // workflow ads
   { key: "ads.submit", label: "Submit ad for review", group: "Ads Workflow" },
   { key: "ads.review.view", label: "View ads review queue", group: "Ads Workflow" },
   { key: "ads.review.approve", label: "Approve ad", group: "Ads Workflow" },
   { key: "ads.review.reject", label: "Reject ad", group: "Ads Workflow" },
   { key: "ads.archive", label: "Archive ad", group: "Ads Workflow" },
 
-  // ===================== NEWSLETTER =====================
   { key: "newsletter.view", label: "View subscribers", group: "Newsletter" },
   { key: "newsletter.create", label: "Create subscription", group: "Newsletter" },
   { key: "newsletter.update", label: "Update subscriber", group: "Newsletter" },
@@ -105,7 +91,6 @@ export const PERMISSIONS = [
   { key: "newsletter.send", label: "Send campaign", group: "Newsletter" },
   { key: "newsletter.stats.view", label: "View newsletter stats", group: "Stats" },
 
-  // ===================== CONTACTS =====================
   { key: "contacts.view", label: "View contact messages", group: "Contacts" },
   { key: "contacts.reply", label: "Reply to contacts", group: "Contacts" },
   { key: "contacts.delete", label: "Delete contact message", group: "Contacts" },
@@ -113,23 +98,19 @@ export const PERMISSIONS = [
   { key: "contacts.archive", label: "Archive/unarchive messages", group: "Contacts" },
   { key: "contacts.stats.view", label: "View contacts stats", group: "Stats" },
 
-  // ===================== SETTINGS =====================
   { key: "settings.view", label: "View app settings", group: "Settings" },
   { key: "settings.update", label: "Update app settings", group: "Settings" },
 
-  // ===================== DB ADMIN =====================
   { key: "db.stats.view", label: "View database stats", group: "DB Admin" },
   { key: "db.backup", label: "Run database backup", group: "DB Admin" },
   { key: "db.optimize", label: "Optimize database", group: "DB Admin" },
   { key: "db.cleanup_logs", label: "Cleanup database logs", group: "DB Admin" },
 
-  // ===================== API KEYS =====================
   { key: "api_keys.view", label: "View API keys", group: "API Keys" },
   { key: "api_keys.create", label: "Create API key", group: "API Keys" },
   { key: "api_keys.update", label: "Update API key", group: "API Keys" },
   { key: "api_keys.delete", label: "Delete API key", group: "API Keys" },
 
-  // ===================== RBAC =====================
   { key: "rbac.roles.view", label: "View RBAC roles", group: "RBAC" },
   { key: "rbac.roles.create", label: "Create RBAC role", group: "RBAC" },
   { key: "rbac.roles.update", label: "Update RBAC role", group: "RBAC" },
@@ -139,7 +120,6 @@ export const PERMISSIONS = [
   { key: "rbac.permissions.assign", label: "Assign permissions to roles", group: "RBAC" },
   { key: "rbac.users.assign_roles", label: "Assign roles to users", group: "RBAC" },
 
-  // ===================== GLOBAL STATS =====================
   { key: "stats.dashboard.view", label: "View stats dashboard", group: "Stats" },
 ] as const;
 
@@ -171,7 +151,6 @@ export class PermissionsSeeder {
         dirty = true;
       }
 
-      // group optional (si ta table a group)
       if ("group" in existing && (existing as any).group !== (p as any).group) {
         (existing as any).group = (p as any).group ?? null;
         dirty = true;

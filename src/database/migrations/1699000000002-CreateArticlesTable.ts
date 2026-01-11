@@ -82,7 +82,6 @@ export class CreateArticlesTable1699000000002 implements MigrationInterface {
             }),
         );
 
-        // Clé étrangère vers la table users
         await queryRunner.createForeignKey(
             'articles',
             new TableForeignKey({
@@ -95,7 +94,6 @@ export class CreateArticlesTable1699000000002 implements MigrationInterface {
             }),
         );
 
-        // Index pour optimiser les performances
         await queryRunner.createIndex(
             'articles',
             new TableIndex({ name: 'IDX_ARTICLES_SLUG', columnNames: ['slug'], isUnique: true }),

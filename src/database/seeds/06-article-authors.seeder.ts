@@ -1,13 +1,10 @@
-// src/database/seeds/06-article-authors.seeder.ts
 import { AppDataSource } from "../data-source";
 import { Article } from "../../entities/article.entity";
 import { User, UserRole } from "../../entities/user.entity";
 import { ArticleAuthor } from "../../entities/article-author.entity";
 
-// faker optionnel (si installé)
 let faker: any = null;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   faker = require("@faker-js/faker").faker;
 } catch {}
 
@@ -55,7 +52,6 @@ export class ArticleAuthorSeeder {
         continue;
       }
 
-      // 1 auteur principal + 0..2 co-auteurs
       const howMany = faker ? faker.number.int({ min: 1, max: Math.min(3, pool.length) }) : Math.min(2, pool.length);
       const chosen = pickManyUnique(pool, howMany);
 
@@ -67,7 +63,6 @@ export class ArticleAuthorSeeder {
         ...others.map((u) => pivotRepo.create({ articleId: article.id, userId: u.id, isMain: false })),
       ];
 
-      // ✅ rows est ArticleAuthor[] (pas [][]), donc save OK
       await pivotRepo.save(rows);
       created += rows.length;
     }

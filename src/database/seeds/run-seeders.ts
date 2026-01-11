@@ -1,4 +1,3 @@
-// src/database/seeds/run.ts
 import "reflect-metadata";
 import { config } from "dotenv";
 config();

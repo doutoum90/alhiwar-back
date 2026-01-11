@@ -1,11 +1,9 @@
-// src/database/seeds/02-categories.seeder.ts
 import { AppDataSource } from "../data-source";
 import { Category, CategoryStatus } from "../../entities/category.entity";
 import { User, UserRole } from "../../entities/user.entity";
 
 const hoursAgo = (h: number) => new Date(Date.now() - h * 60 * 60 * 1000);
 
-// Helpers workflow: ensure coherence
 const ensureDraft = (c: Partial<Category>) => {
   c.status = CategoryStatus.DRAFT;
   c.submittedAt = null;
@@ -44,7 +42,6 @@ const ensurePublished = (c: Partial<Category>) => {
 
 const ensureArchived = (c: Partial<Category>) => {
   c.status = CategoryStatus.ARCHIVED;
-  // archived generally means it was reviewed at some point
   c.submittedAt = c.submittedAt ?? hoursAgo(96);
   c.submittedById = c.submittedById ?? c.createdById ?? null;
   c.reviewedAt = c.reviewedAt ?? hoursAgo(94);
@@ -64,16 +61,13 @@ export class CategorySeeder {
     const author = await userRepo.findOne({ where: { role: UserRole.AUTHOR } as any });
     const journalist = await userRepo.findOne({ where: { role: UserRole.JOURNALIST } as any });
 
-    // creator: prefer author/journalist, else admin/editor
     const creatorUserId =
       author?.id ?? journalist?.id ?? editor?.id ?? admin?.id ?? null;
 
-    // reviewer: prefer editor/admin
     const reviewerUserId =
       editor?.id ?? admin?.id ?? null;
 
     const categories: Array<Partial<Category>> = [
-      // ===================== Published =====================
       {
         name: "Actualites",
         slug: "actualites",
@@ -117,7 +111,6 @@ export class CategorySeeder {
         status: CategoryStatus.PUBLISHED,
       },
 
-      // ===================== In review =====================
       {
         name: "Technologie",
         slug: "technologie",
@@ -133,7 +126,6 @@ export class CategorySeeder {
         status: CategoryStatus.IN_REVIEW,
       },
 
-      // ===================== Rejected =====================
       {
         name: "Culture",
         slug: "culture",
@@ -149,7 +141,6 @@ export class CategorySeeder {
         status: CategoryStatus.REJECTED,
       },
 
-      // ===================== Archived =====================
       {
         name: "Sport",
         slug: "sport",
@@ -165,7 +156,6 @@ export class CategorySeeder {
         status: CategoryStatus.ARCHIVED,
       },
 
-      // ===================== Draft =====================
       {
         name: "Societe",
         slug: "societe",
@@ -181,8 +171,6 @@ export class CategorySeeder {
         status: CategoryStatus.DRAFT,
       },
 
-      // ===================== Edge cases =====================
-      // Draft with minimal fields (no description/color)
       {
         name: "Opinions",
         slug: "opinions",
@@ -193,7 +181,6 @@ export class CategorySeeder {
         status: CategoryStatus.DRAFT,
       },
 
-      // In review with no reviewer assigned yet (explicit)
       {
         name: "International",
         slug: "international",
@@ -205,7 +192,6 @@ export class CategorySeeder {
       },
     ];
 
-    // Enforce coherence for every category
     for (const c of categories) {
       c.name = String(c.name ?? "").trim();
       c.slug = String(c.slug ?? "").trim();
@@ -214,10 +200,8 @@ export class CategorySeeder {
       c.color = c.color === undefined ? null : (c.color ?? null);
       c.sortOrder = Number(c.sortOrder ?? 0);
 
-      // default creator
       c.createdById = (c.createdById ?? creatorUserId) ?? null;
 
-      // workflow coherence
       switch (c.status) {
         case CategoryStatus.DRAFT:
           ensureDraft(c);

@@ -1,13 +1,10 @@
-// src/database/seeds/08-article-likes.seeder.ts
 import { AppDataSource } from "../data-source";
 import { Article } from "../../entities/article.entity";
 import { User } from "../../entities/user.entity";
 import { ArticleLike } from "../../entities/article-like.entity";
 
-// faker optionnel (ne casse pas le build si absent)
 let faker: any = null;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   faker = require("@faker-js/faker").faker;
 } catch {}
 
@@ -34,7 +31,6 @@ export class ArticleLikeSeeder {
     let skipped = 0;
 
     for (const article of articles) {
-      // max 1–3 likes par article
       const maxLikes = Math.min(
         users.length,
         faker ? faker.number.int({ min: 1, max: 3 }) : rand(1, 3)

@@ -96,7 +96,6 @@ export class CreateAdsTable1699000000003 implements MigrationInterface {
             }),
         );
 
-        // Index pour optimiser les performances
         await queryRunner.createIndex(
             'ads',
             new TableIndex({ name: 'IDX_ADS_STATUS', columnNames: ['status'] }),

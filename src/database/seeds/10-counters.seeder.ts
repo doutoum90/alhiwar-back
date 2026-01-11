@@ -4,7 +4,6 @@ export class CountersSeeder {
     public static async run(): Promise<void> {
         console.log("🧮 Recomputing counters...");
 
-        // likesCount (si la colonne existe)
         try {
             await AppDataSource.query(`
         UPDATE articles a
@@ -18,7 +17,6 @@ export class CountersSeeder {
       `);
         } catch { }
 
-        // commentsCount (si colonne existe)
         try {
             await AppDataSource.query(`
         UPDATE articles a
@@ -32,7 +30,6 @@ export class CountersSeeder {
       `);
         } catch { }
 
-        // users: articlesCount + totalViews (views doit exister)
         try {
             await AppDataSource.query(`
         UPDATE users u

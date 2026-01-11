@@ -1,4 +1,3 @@
-// src/database/seeds/00-roles.seeder.ts
 import { AppDataSource } from "../data-source";
 import { Role } from "../../entities/role.entity";
 

@@ -1,12 +1,9 @@
-// src/database/seeds/05-articles-review-workflow.seeder.ts
 import { AppDataSource } from "../data-source";
 import { Article } from "../../entities/article.entity";
 import { User, UserRole } from "../../entities/user.entity";
 
-// faker optionnel (si installé)
 let faker: any = null;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   faker = require("@faker-js/faker").faker;
 } catch { }
 const slugify = (s: string) =>
@@ -27,7 +24,6 @@ export class ArticlesSeeder {
     const articleRepo = AppDataSource.getRepository(Article);
     const userRepo = AppDataSource.getRepository(User);
 
-    // writers pool: journalists + authors (+ editors/admin if you want)
     const writers = await userRepo.find({
       where: [
         { role: UserRole.JOURNALIST } as any,
@@ -42,7 +38,6 @@ export class ArticlesSeeder {
       return;
     }
 
-    // Read categories via raw SQL to avoid entity mismatch
     const categories: Array<{ id: string; name: string; slug: string }> = await AppDataSource.query(
       `SELECT id, name, slug FROM categories ORDER BY name ASC`
     );
@@ -52,7 +47,6 @@ export class ArticlesSeeder {
       return;
     }
 
-    // Detect columns safely
     const meta = articleRepo.metadata;
     const has = (col: string) => Boolean(meta.columns.find((c) => c.propertyName === col));
     const hasExcerpt = has("excerpt");
@@ -82,8 +76,6 @@ export class ArticlesSeeder {
           continue;
         }
 
-        // Status distribution:
-        // 65% draft, 25% published, 10% archived
         const r = Math.random();
         const status = r < 0.65 ? "draft" : r < 0.9 ? "published" : "archived";
 

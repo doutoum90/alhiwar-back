@@ -1,13 +1,10 @@
-// src/database/seeds/09-article-comments.seeder.ts
 import { AppDataSource } from "../data-source";
 import { Article } from "../../entities/article.entity";
 import { User } from "../../entities/user.entity";
 import { ArticleComment } from "../../entities/article-comment.entity";
 
-// faker optionnel (ne casse pas le build si absent)
 let faker: any = null;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   faker = require("@faker-js/faker").faker;
 } catch {}
 
@@ -25,7 +22,6 @@ const makeCommentText = (title: string) => {
     const sentence = faker.lorem.sentences({ min: 1, max: 2 });
     return `${sentence} (Sur: "${title}")`;
   }
-  // fallback
   return `Commentaire sur "${title}"`;
 };
 
@@ -57,7 +53,6 @@ export class ArticleCommentSeeder {
         continue;
       }
 
-      // 1 à 3 commentaires par article (selon nb users)
       const howMany = Math.min(
         users.length,
         faker ? faker.number.int({ min: 1, max: 3 }) : rand(1, 3)
@@ -65,7 +60,6 @@ export class ArticleCommentSeeder {
 
       const chosen = pickMany(users, howMany);
 
-      // ✅ IMPORTANT: build a flat ArticleComment[] (pas [][] )
       const rows: ArticleComment[] = chosen.map((u, idx) =>
         commentRepo.create({
           articleId: article.id,
@@ -75,7 +69,6 @@ export class ArticleCommentSeeder {
         })
       );
 
-      // ✅ save une liste simple ArticleComment[]
       await commentRepo.save(rows);
 
       created += rows.length;

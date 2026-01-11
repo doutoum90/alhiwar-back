@@ -64,7 +64,6 @@ export class CreateUsersTable1699000000001 implements MigrationInterface {
             }),
         );
 
-        // Créer les index pour optimiser les performances
         await queryRunner.createIndex(
             'users',
             new TableIndex({ name: 'IDX_USERS_EMAIL', columnNames: ['email'] }),

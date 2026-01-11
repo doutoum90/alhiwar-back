@@ -1,4 +1,3 @@
-// src/database/seeds/04-ads.seeder.ts
 import { AppDataSource } from "../data-source";
 import { Ad, AdType, AdWorkflowStatus } from "../../entities/ad.entity";
 import { User, UserRole } from "../../entities/user.entity";
@@ -69,7 +68,6 @@ export class AdsSeeder {
     const expiredEnd = addDays(now, -30);
 
     const ads: SeedAd[] = [
-      // ✅ PUBLISHED active (date window OK)
       {
         title: "Premium Web Development Bootcamp",
         content: "Learn React, Node.js and TypeScript with real projects. Certification included.",
@@ -91,7 +89,6 @@ export class AdsSeeder {
         reviewComment: "Approved",
       },
 
-      // ✅ PUBLISHED scheduled (future start)
       {
         title: "Tech Conference 2026",
         content: "Join the biggest tech conference. Talks, workshops, networking.",
@@ -113,7 +110,6 @@ export class AdsSeeder {
         reviewComment: "Approved (scheduled)",
       },
 
-      // ✅ IN_REVIEW
       {
         title: "Cloud Hosting (Pending Review)",
         content: "High performance cloud hosting with 24/7 support.",
@@ -135,7 +131,6 @@ export class AdsSeeder {
         reviewComment: null,
       },
 
-      // ✅ REJECTED
       {
         title: "Rejected Ad (Bad Landing Page)",
         content: "This ad is rejected for testing purposes.",
@@ -157,7 +152,6 @@ export class AdsSeeder {
         reviewComment: "Rejected: landing page not compliant.",
       },
 
-      // ✅ DRAFT
       {
         title: "Draft Ad (Not Submitted)",
         content: "Draft ad content for testing draft state.",
@@ -179,7 +173,6 @@ export class AdsSeeder {
         reviewComment: null,
       },
 
-      // ✅ ARCHIVED (expired)
       {
         title: "Archived Ad (Expired Campaign)",
         content: "Archived ad for testing archive and expired dates.",

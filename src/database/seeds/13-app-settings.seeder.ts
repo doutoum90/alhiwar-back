@@ -18,9 +18,9 @@ export class AppSettingsSeeder {
             registrationEnabled: true,
             commentsEnabled: true,
             emailVerificationRequired: true,
-            maxFileSize: 50, // MB (cohérent avec uploads 50MB dans articles)
+            maxFileSize: 50,
             articlesPerPage: 10,
-            sessionTimeout: 60, // minutes
+            sessionTimeout: 60,
         };
 
         const email: EmailSettings = {
@@ -36,10 +36,10 @@ export class AppSettingsSeeder {
         const security: SecuritySettings = {
             passwordMinLength: 8,
             requireSpecialChars: true,
-            sessionDuration: 60 * 60 * 24, // seconds (1 day)
+            sessionDuration: 60 * 60 * 24,
             maxLoginAttempts: 10,
             twoFactorEnabled: false,
-            ipWhitelist: [], // optionnel
+            ipWhitelist: [],
         };
 
         const key = "singleton";

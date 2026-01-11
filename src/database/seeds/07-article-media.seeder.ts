@@ -1,4 +1,3 @@
-// src/database/seeds/07-article-media.seeder.ts
 import { AppDataSource } from "../data-source";
 import { Article } from "../../entities/article.entity";
 import { ArticleMedia, MediaType } from "../../entities/article-media.entity";
@@ -36,14 +35,12 @@ export class ArticleMediaSeeder {
         continue;
       }
 
-      // 30%: no media, 50%: 1 media, 20%: 2-3 medias
       const r = Math.random();
       const howMany = r < 0.3 ? 0 : r < 0.8 ? 1 : faker.number.int({ min: 2, max: 3 });
       if (howMany === 0) continue;
 
       const seed = `${article.id}-${faker.string.alphanumeric(6)}`;
 
-      // IMPORTANT: insert() veut des objets "plain", pas forcément des entités
       const rows = Array.from({ length: howMany }).map((_, i) => {
         const type =
           faker.number.int({ min: 1, max: 100 }) <= 70
@@ -73,7 +70,7 @@ export class ArticleMediaSeeder {
         } as Partial<ArticleMedia>;
       });
 
-      await mediaRepo.insert(rows as any); // ✅ TS-safe, bulk insert
+      await mediaRepo.insert(rows as any);
       created += rows.length;
     }
 

@@ -13,10 +13,6 @@ export class ContactsSeeder {
 
         const repo = AppDataSource.getRepository(Contact);
 
-        // Scénarios réalistes :
-        // - 2 non lus (isRead=false, archivedAt=null)
-        // - 2 lus (isRead=true, archivedAt=null)
-        // - 2 archivés (archivedAt != null, généralement lus)
         const rows: Array<Partial<Contact>> = [
             {
                 name: "Visitor One",

@@ -1,4 +1,3 @@
-// src/database/seeds/00-user-role-links.seeder.ts
 import { AppDataSource } from "../data-source";
 import { User, UserRole } from "../../entities/user.entity";
 import { Role } from "../../entities/role.entity";
@@ -13,7 +12,7 @@ const mapUserRoleToRoleKey = (userRole: UserRole | string) => {
   return "user";
 };
 
-const SYNC_SINGLE_ROLE = false; // true => supprime les autres rôles si tu veux 1 seul role par user
+const SYNC_SINGLE_ROLE = false;
 
 export class UserRoleLinksSeeder {
   public static async run(): Promise<void> {
@@ -35,7 +34,6 @@ export class UserRoleLinksSeeder {
     let removed = 0;
     let skipped = 0;
 
-    // add missing links
     const toInsert: Array<{ userId: string; roleId: string }> = [];
 
     for (const u of users) {
@@ -57,7 +55,6 @@ export class UserRoleLinksSeeder {
       created = toInsert.length;
     }
 
-    // optional: keep only one role per user
     if (SYNC_SINGLE_ROLE) {
       const freshLinks = await linkRepo.find();
       const expectedRoleByUser = new Map<string, string>();

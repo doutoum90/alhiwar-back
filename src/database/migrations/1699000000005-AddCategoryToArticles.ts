@@ -4,7 +4,6 @@ export class AddCategoryToArticles1699000000005 implements MigrationInterface {
   name = 'AddCategoryToArticles1699000000005';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Ajouter la colonne categoryId
     await queryRunner.addColumn(
       'articles',
       new TableColumn({
@@ -14,7 +13,6 @@ export class AddCategoryToArticles1699000000005 implements MigrationInterface {
       }),
     );
 
-    // Créer la clé étrangère
     await queryRunner.createForeignKey(
       'articles',
       new TableForeignKey({

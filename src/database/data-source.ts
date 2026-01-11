@@ -56,7 +56,6 @@ export const AppDataSource = new DataSource({
     ArticleComment,
   ],
 
-  // ✅ IMPORTANT: en dev ts-node => .ts, en prod => .js
   migrations: [
     isProd ? "dist/database/migrations/*.js" : "src/database/migrations/*.ts",
   ],

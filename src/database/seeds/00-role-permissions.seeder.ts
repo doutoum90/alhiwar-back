@@ -1,4 +1,3 @@
-// src/database/seeds/00-role-permissions.seeder.ts
 import { AppDataSource } from "../data-source";
 import { Role } from "../../entities/role.entity";
 import { Permission } from "../../entities/permission.entity";
@@ -37,7 +36,6 @@ export class RolePermissionsSeeder {
     const editorPerms = perms.filter((p) => p.key !== "api_keys.delete");
 
     const authorPerms = perms.filter((p) => {
-      // author/journalist can create + submit, but cannot approve/reject/archive users, and limited admin actions
       const blocked = new Set<string>([
         "users.create",
         "users.update",
@@ -70,7 +68,6 @@ export class RolePermissionsSeeder {
 
         "newsletter.send",
 
-        // approve/reject/admin workflows
         "articles.review.view",
         "articles.review.approve",
         "articles.review.reject",
@@ -91,7 +88,6 @@ export class RolePermissionsSeeder {
 
       if (blocked.has(p.key)) return false;
 
-      // Allow submit permissions (needed for workflow coverage)
       return true;
     });
 

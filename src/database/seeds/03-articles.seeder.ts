@@ -1,4 +1,3 @@
-// src/database/seeds/03-articles.seeder.ts
 import { AppDataSource } from "../data-source";
 import { Article, type ArticleStatus } from "../../entities/article.entity";
 import { User, UserRole } from "../../entities/user.entity";
@@ -34,7 +33,6 @@ export class ArticlesSeeder {
     const articleRepo = AppDataSource.getRepository(Article);
     const userRepo = AppDataSource.getRepository(User);
 
-    // pools
     const admins = await userRepo.find({ where: { role: UserRole.ADMIN } as any });
     const editors = await userRepo.find({ where: { role: UserRole.EDITOR_IN_CHIEF } as any });
     const journalists = await userRepo.find({ where: { role: UserRole.JOURNALIST } as any });
@@ -67,7 +65,6 @@ export class ArticlesSeeder {
 
     const PER_CATEGORY = 10;
 
-    // distribution stable & covers all cases
     const plan: ArticleStatus[] = [
       "published",
       "published",
@@ -121,15 +118,10 @@ export class ArticlesSeeder {
         a.content = `<h2>${title}</h2><p>${contentBody}</p><p><strong>Category:</strong> ${catName}</p>`;
         a.status = status;
 
-        // base relations
         a.categoryId = cat.id;
 
-        // AUTHOR RULE:
-        // - published/archived => admin/editor as author
-        // - others => writer
         a.authorId = status === "published" || status === "archived" ? publisher.id : writer.id;
 
-        // tags + counters
         a.tags = faker
           ? faker.helpers.arrayElements(
               ["politics", "economy", "tech", "culture", "sports", "local", "world", "analysis"],
@@ -140,7 +132,6 @@ export class ArticlesSeeder {
         a.likesCount = 0;
         a.commentsCount = 0;
 
-        // workflow
         a.submittedAt = null;
         a.submittedById = null;
         a.reviewedAt = null;
