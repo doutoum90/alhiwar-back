@@ -39,7 +39,7 @@ const logger = new Logger('AppModule');
     AuthorsModule,
     ContactModule,
     ConfigModule.forRoot({
-      isGlobal: true, // ✅ rend ConfigService dispo partout
+      isGlobal: true,
     }),
     SettingModule,
     NewsletterModule,

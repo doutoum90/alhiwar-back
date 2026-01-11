@@ -8,12 +8,12 @@ import { Article } from '../entities/article.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      User,      // This provides UserRepository
-      Article,   // This provides ArticleRepository - THIS WAS MISSING
+      User,
+      Article,
     ]),
   ],
   controllers: [AuthorsController],
   providers: [AuthorsService],
-  exports: [AuthorsService], // Export if used in other modules
+  exports: [AuthorsService],
 })
 export class AuthorsModule { }

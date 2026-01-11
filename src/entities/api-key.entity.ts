@@ -15,12 +15,10 @@ export class ApiKey {
   @Column({ length: 120 })
   name: string;
 
-  // exemple: "ak_live_2f9c..." (on stocke prefix pour afficher sans exposer le secret)
   @Index()
   @Column({ length: 32 })
   prefix: string;
 
-  // hash du secret (pas le secret lui-même)
   @Column({ type: "text" })
   keyHash: string;
 

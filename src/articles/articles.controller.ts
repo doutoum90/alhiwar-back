@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   UseGuards,
   Post,
@@ -45,8 +46,23 @@ const fileName = (_req: any, file: any, cb: any) => {
   const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
   cb(null, `${unique}${extname(file.originalname)}`);
 };
+const allowedMimeTypes = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "image/avif",
+  "application/pdf",
+]);
+const fileFilter = (_req: any, file: Express.Multer.File, cb: (error: Error | null, acceptFile: boolean) => void) => {
+  if (allowedMimeTypes.has(file.mimetype)) {
+    cb(null, true);
+    return;
+  }
+  cb(new BadRequestException("Unsupported file type") as any, false);
+};
 
-// ⚠️ route param UUID only
+// Order matters: keep static routes before UUID routes.
 const UUID = "([0-9a-fA-F-]{36})";
 
 @Controller("articles")
@@ -58,8 +74,6 @@ export class ArticlesController {
     private readonly comments: ArticleCommentsService,
     private readonly authors: ArticleAuthorsService
   ) { }
-
-  /* ================= STATS (PROTECTED) ================= */
 
   @ApiOperation({ summary: "Count articles in_review" })
   @ApiBearerAuth()
@@ -80,8 +94,6 @@ export class ArticlesController {
     return this.articles.getStatsSummary(period);
   }
 
-  /* ================= PUBLIC (NO UUID CONFLICTS) ================= */
-
   @Get("published")
   findPublished() {
     return this.articles.findPublished();
@@ -96,8 +108,6 @@ export class ArticlesController {
   findBySlug(@Param("slug") slug: string) {
     return this.articles.findBySlug(slug);
   }
-
-  /* ===== PUBLIC COMMENTS (by UUID in path, but still safe) ===== */
 
   @Get(`:id${UUID}/comments/public`)
   listCommentsPublic(
@@ -116,9 +126,6 @@ export class ArticlesController {
     return this.comments.addPublic(articleId, dto);
   }
 
-  /* ================= GLOBAL (PROTECTED) ================= */
-  /* ⚠️ Toujours avant :id${UUID} */
-
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions("articles.review.view")
@@ -126,8 +133,6 @@ export class ArticlesController {
   reviewQueue() {
     return this.articles.getReviewQueue();
   }
-
-  /* ===== COMMENTS (GLOBAL protected) ===== */
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -146,8 +151,6 @@ export class ArticlesController {
     return this.comments.moderate(commentId, dto.status);
   }
 
-  /* ===== MEDIA (GLOBAL protected) ===== */
-
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions("media.reorder")
@@ -163,9 +166,6 @@ export class ArticlesController {
   removeMedia(@Param("mediaId") mediaId: string) {
     return this.media.remove(mediaId);
   }
-
-  /* ================= UUID ONLY (PROTECTED) ================= */
-  /* ⚠️ Tout ce qui commence par :id doit être en dernier */
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -216,8 +216,6 @@ export class ArticlesController {
     return this.authors.getAuthors(articleId);
   }
 
-  /* ===== REVIEW WORKFLOW (protected) ===== */
-
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions("articles.submit_review")
@@ -241,8 +239,6 @@ export class ArticlesController {
   reject(@Param("id") id: string, @Body() dto: RejectArticleDto, @Req() req: Request) {
     return this.articles.reject(id, dto.comment, (req as any).user);
   }
-
-  /* ===== ADMIN LIST/CRUD (protected) ===== */
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -292,8 +288,6 @@ export class ArticlesController {
     return this.articles.remove(id);
   }
 
-  /* ===== AUTHORS (protected) ===== */
-
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions("articles.update")
@@ -310,8 +304,6 @@ export class ArticlesController {
     return this.authors.setMainAuthor(articleId, dto.userId);
   }
 
-  /* ===== LIKES (protected) ===== */
-
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions("likes.toggle")
@@ -327,8 +319,6 @@ export class ArticlesController {
   isLiked(@Param("id") articleId: string, @CurrentUser() user: AuthUser) {
     return this.likes.isLiked(articleId, user.userId);
   }
-
-  /* ===== MEDIA (protected) ===== */
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -348,6 +338,7 @@ export class ArticlesController {
         destination: "./uploads/articles",
         filename: fileName,
       }),
+      fileFilter,
       limits: { fileSize: 50 * 1024 * 1024 },
     })
   )

@@ -61,7 +61,6 @@ export class SettingService {
   async getAll() {
     const row = await this.getOrCreateSingleton();
 
-    // IMPORTANT: on peut masquer smtpPassword côté API (optionnel)
     const emailSafe = { ...row.email, smtpPassword: row.email.smtpPassword ? null : null };
 
     return {
@@ -81,8 +80,7 @@ export class SettingService {
   async updateEmail(dto: UpdateEmailSettingsDto) {
     const row = await this.getOrCreateSingleton();
 
-    // si smtpPassword est undefined => pas de changement
-    // si "" (vide) => pas de changement (pratique côté UI)
+    // Preserve existing smtpPassword on empty/undefined updates.
     const next = { ...row.email, ...dto } as any;
     if (dto.smtpPassword === undefined || dto.smtpPassword === "") {
       next.smtpPassword = row.email.smtpPassword;
@@ -91,7 +89,6 @@ export class SettingService {
     row.email = next;
     const saved = await this.repo.save(row);
 
-    // masquer le password
     return { ...saved.email, smtpPassword: null };
   }
 

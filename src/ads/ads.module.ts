@@ -8,6 +8,6 @@ import { Ad } from '../entities/ad.entity';
   imports: [TypeOrmModule.forFeature([Ad])],
   controllers: [AdsController],
   providers: [AdsService],
-  exports: [AdsService], // Export pour utilisation dans d'autres modules
+  exports: [AdsService],
 })
 export class AdsModule { }

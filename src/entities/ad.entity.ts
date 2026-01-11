@@ -75,10 +75,6 @@ export class Ad {
   @Column({ type: "timestamp", nullable: true })
   endDate: Date | null;
 
-  // =========================
-  // Workflow metadata
-  // =========================
-
   @Index()
   @Column({ type: "uuid", nullable: true })
   createdById: string | null;
@@ -107,10 +103,6 @@ export class Ad {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  // =========================
-  // Utils
-  // =========================
 
   get ctr(): number {
     return this.impressions > 0 ? (this.clicks / this.impressions) * 100 : 0;

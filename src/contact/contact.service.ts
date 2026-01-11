@@ -90,7 +90,6 @@ export class ContactService {
     const unread = await this.contactRepository.count({ where: { isRead: false } });
     const read = total - unread;
 
-    // Messages par mois (derniers 12 mois)
     const monthlyStats = await this.contactRepository
       .createQueryBuilder('contact')
       .select("DATE_TRUNC('month', contact.createdAt)", 'month')
@@ -102,7 +101,6 @@ export class ContactService {
       .orderBy('month', 'DESC')
       .getRawMany();
 
-    // Top domaines email
     const topDomains = await this.contactRepository
       .createQueryBuilder('contact')
       .select("SUBSTRING(contact.email FROM '@(.*)$')", 'domain')

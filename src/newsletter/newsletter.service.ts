@@ -3,10 +3,11 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  Logger,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, ILike } from "typeorm";
-import { randomBytes } from "crypto";
+import { randomHex } from "src/utils/crypto";
 import { SubscribeNewsletterDto } from "./dto/subscribe-newsletter.dto";
 import { AdminUpdateNewsletterDto } from "./dto/admin-update-newsletter.dto";
 import { NewsletterSubscription } from "../entities/newsletter_subscription.entity";
@@ -17,6 +18,8 @@ type Paged<T> = { items: T[]; total: number; page: number; limit: number; pages:
 
 @Injectable()
 export class NewsletterService {
+  private readonly logger = new Logger(NewsletterService.name);
+
   constructor(
     @InjectRepository(NewsletterSubscription)
     private repo: Repository<NewsletterSubscription>
@@ -27,7 +30,6 @@ export class NewsletterService {
     const active = await this.repo.count({ where: { isActive: true } });
     const verified = await this.repo.count({ where: { isVerified: true } });
 
-    // derniers 12 mois (inscriptions)
     const monthly = await this.repo
       .createQueryBuilder("n")
       .select("DATE_TRUNC('month', n.createdAt)", "month")
@@ -48,7 +50,7 @@ export class NewsletterService {
   }
 
   private makeToken(len = 32) {
-    return randomBytes(len).toString("hex"); // 64 chars si len=32
+    return randomHex(len);
   }
 
   private async sendVerifyEmail(email: string, verifyUrl: string, unsubscribeUrl: string) {
@@ -62,15 +64,9 @@ export class NewsletterService {
     const fromEmail = process.env.SMTP_FROM_EMAIL ?? "no-reply@example.com";
 
     if (!host || !user || !pass) {
-      // En dev tu peux fallback en console, mais en prod лучше throw
-      // eslint-disable-next-line no-console
-      console.log("⚠️ SMTP not configured. Email not sent.");
-      console.log("📩 TO:", email);
-      console.log("✅ verify:", verifyUrl);
-      console.log("🚫 unsubscribe:", unsubscribeUrl);
+      this.logger.warn("SMTP not configured. Skipping newsletter verification email.");
       return;
     }
-    console.log("createTransport:", typeof (nodemailer as any).createTransport);
 
     const transporter = nodemailer.createTransport({
       host,
@@ -137,19 +133,17 @@ export class NewsletterService {
 
     const existing = await this.repo.findOne({ where: { email } });
 
-    // Si déjà actif + vérifié => 409
     if (existing?.isActive && existing.isVerified) {
       throw new ConflictException("Vous êtes déjà inscrit à la newsletter.");
     }
 
-    // Prépare tokens
     const verifyToken = this.makeToken(24);
     const unsubscribeToken = existing?.unsubscribeToken ?? this.makeToken(24);
-    const verifyTokenExpiresAt = new Date(now.getTime() + 1000 * 60 * 60 * 24); // 24h
+    const verifyTokenExpiresAt = new Date(now.getTime() + 1000 * 60 * 60 * 24);
 
     if (existing) {
-      existing.isActive = true;         // réactive
-      existing.isVerified = false;      // re-verify (double opt-in)
+      existing.isActive = true;
+      existing.isVerified = false;
       existing.verifyToken = verifyToken;
       existing.verifyTokenExpiresAt = verifyTokenExpiresAt;
       existing.unsubscribeToken = unsubscribeToken;
@@ -166,7 +160,6 @@ export class NewsletterService {
       await this.repo.save(row);
     }
 
-    // 🔗 URLs (front)
     const verifyUrl = `${process.env.PUBLIC_WEB_URL}/newsletter/verify?token=${encodeURIComponent(verifyToken)}`;
     const unsubscribeUrl = `${process.env.PUBLIC_WEB_URL}/newsletter/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
 
@@ -197,7 +190,6 @@ export class NewsletterService {
     return { ok: true, message: "Inscription confirmée. Merci !" };
   }
 
-  // ✅ Unsubscribe PUBLIC (via token)
   async unsubscribeByToken(token: string) {
     if (!token) throw new BadRequestException("Token manquant.");
 
@@ -210,7 +202,6 @@ export class NewsletterService {
     return { ok: true, message: "Vous êtes désinscrit de la newsletter." };
   }
 
-  // ✅ Unsubscribe PUBLIC (via email) optionnel
   async unsubscribeByEmail(email: string) {
     const v = (email ?? "").trim().toLowerCase();
     if (!v) throw new BadRequestException("Email manquant.");
@@ -224,8 +215,6 @@ export class NewsletterService {
     return { ok: true, message: "Vous êtes désinscrit de la newsletter." };
   }
 
-  // ===== ADMIN =====
-
   async adminList(params: { q?: string; status?: string; page?: number; limit?: number }): Promise<Paged<NewsletterSubscription>> {
     const page = Math.max(1, Number(params.page ?? 1));
     const limit = Math.min(100, Math.max(1, Number(params.limit ?? 20)));
@@ -234,7 +223,6 @@ export class NewsletterService {
     const where: any = {};
     if (params.q?.trim()) where.email = ILike(`%${params.q.trim()}%`);
 
-    // status: all | active | inactive | verified | unverified
     if (params.status === "active") where.isActive = true;
     if (params.status === "inactive") where.isActive = false;
     if (params.status === "verified") where.isVerified = true;

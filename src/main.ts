@@ -3,16 +3,21 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { join } from "path";
 import * as dotenv from 'dotenv';
-import { NestExpressApplication } from '@nestjs/platform-express'; // ✅
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 const logger = new Logger('Bootstrap');
 dotenv.config();
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule); // ✅
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  const corsOrigins = (process.env.CORS_ORIGINS ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:5173'],
+    origin: corsOrigins.length ? corsOrigins : ["http://localhost:3000", "http://localhost:5173"],
     allowedHeaders: ['Content-Type', 'Authorization'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
@@ -28,7 +33,6 @@ async function bootstrap() {
     }),
   );
 
-  // ✅ expose /uploads/*
   app.useStaticAssets(join(process.cwd(), "uploads"), {
     prefix: "/uploads",
   });

@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { ApiKey } from "../entities/api-key.entity";
 import { CreateApiKeyDto, UpdateApiKeyDto } from "./dto/settings.dto";
 import * as crypto from "crypto";
+import { randomHex } from "src/utils/crypto";
 
 @Injectable()
 export class ApiKeysService {
@@ -13,8 +14,7 @@ export class ApiKeysService {
   ) {}
 
   private generateRawKey(): string {
-    // secret brut (à afficher 1 seule fois)
-    return crypto.randomBytes(32).toString("hex");
+    return randomHex(32);
   }
 
   private hashKey(rawKey: string): string {
@@ -47,7 +47,7 @@ export class ApiKeysService {
       lastUsedAt: null,
     });
 
-    const saved = await this.repo.save(entity); // ✅ ApiKey
+    const saved = await this.repo.save(entity);
 
     return { entity: saved, rawKey };
   }

@@ -1,4 +1,3 @@
-// auth-permissions.service.ts
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
@@ -16,10 +15,9 @@ export class AuthPermissionsService {
   ) {}
 
   async getUserPermissions(userId: string) {
-    // user_roles -> roles
     const links = await this.userRoleRepo.find({
       where: { userId } as any,
-      relations: { role: true }, // important
+      relations: { role: true },
     });
 
     const roles = Array.from(new Set(links.map((l) => l.role?.key).filter(Boolean)));
@@ -27,10 +25,9 @@ export class AuthPermissionsService {
     const roleIds = links.map((l) => l.roleId).filter(Boolean);
     if (roleIds.length === 0) return { roles, permissions: [] };
 
-    // role_permissions -> permissions
     const rps = await this.rolePermRepo.find({
       where: { roleId: In(roleIds) } as any,
-      relations: { permission: true }, // important
+      relations: { permission: true },
     });
 
     const permissions = Array.from(

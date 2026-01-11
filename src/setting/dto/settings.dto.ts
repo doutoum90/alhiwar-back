@@ -113,5 +113,4 @@ export class UpdateApiKeyDto {
   isActive?: boolean;
 }
 
-// ✅ Force TypeScript à considérer ce fichier comme un module, même en cas de soucis d’analyse
 export {};

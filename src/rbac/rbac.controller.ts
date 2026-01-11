@@ -1,4 +1,3 @@
-// src/rbac/rbac.controller.ts
 import {
   BadRequestException,
   Body,
@@ -49,14 +48,12 @@ export class RbacController {
     return this.rbac.getRolePermissions(roleId);
   }
 
-  // ✅ ASSIGN/REPLACE (checkbox UI)
   @RequirePermissions("rbac.permissions.assign")
   @Post("roles/:roleId/permissions")
   assignRolePermissions(
     @Param("roleId", ParseUUIDPipe) roleId: string,
     @Body() dto: AssignRolePermissionsDto,
   ) {
-    console.log('dto.permissionKeys --->', dto.permissionKeys)
     if (!Array.isArray(dto.permissionKeys)) {
       throw new BadRequestException("permissionKeys must be an array");
     }
@@ -80,7 +77,6 @@ export class RbacController {
     return this.rbac.getUserRoles(userId);
   }
 
-  // ✅ ASSIGN/REPLACE
   @RequirePermissions("rbac.users.assign_roles")
   @Post("users/:userId/roles")
   assignUserRoles(

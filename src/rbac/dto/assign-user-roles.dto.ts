@@ -1,4 +1,3 @@
-// src/rbac/dto/assign-user-roles.dto.ts
 import { IsArray, IsOptional, IsString, ArrayMinSize } from "class-validator";
 
 export class AssignUserRolesDto {

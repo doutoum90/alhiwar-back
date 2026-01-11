@@ -9,6 +9,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { Request } from 'express';
 import * as bcrypt from 'bcrypt';
 import { cutoffFromPeriod } from "src/stats/period";
+import { randomHex } from "src/utils/crypto";
 
 @Injectable()
 export class AuthService {
@@ -47,15 +48,6 @@ export class AuthService {
       loginsInPeriod: Number(loginsRow?.c ?? 0),
       activeUsers: Number(activeUsersRow?.c ?? 0),
     };
-  }
-
-  async verifyToken() {
-    const token = localStorage.getItem('access_token');
-    const res = await fetch('/api/auth/verify-token', {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!res.ok) throw new Error('Invalid token');
-    return res.json(); // { valid: true, user: {...} }
   }
 
   async findById(id: string): Promise<User> {
@@ -111,8 +103,9 @@ export class AuthService {
       throw new UnauthorizedException('رمز إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية');
     }
 
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
     await this.userRepository.update(user.id, {
-      password: newPassword,
+      password: hashedPassword,
       passwordResetToken: null,
       passwordResetExpiresAt: null,
     });
@@ -134,8 +127,7 @@ export class AuthService {
   }
 
   private generateVerificationToken(): string {
-    return Math.random().toString(36).substring(2, 15) +
-      Math.random().toString(36).substring(2, 15);
+    return randomHex(32);
   }
 
   private signAccessToken(payload: any) {
@@ -155,7 +147,6 @@ export class AuthService {
   async validateUser(email: string, password: string) {
     const normalizedEmail = email.trim().toLowerCase();
 
-    // S'assurer que le password est sélectionné
     const user = await this.userRepository.findOne({
       where: { email: normalizedEmail },
       select: ['id', 'email', 'name', 'password', 'role', 'status', 'avatar', 'isActive'],
@@ -197,7 +188,7 @@ export class AuthService {
 
     return {
       access_token,
-      refresh_token, // <- important pour le front
+      refresh_token,
       user: {
         id: user.id,
         name: user.name,
@@ -209,7 +200,6 @@ export class AuthService {
     };
   }
 
-  // === NOUVEAU: logique de refresh ===
   async refresh(refreshToken: string) {
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token manquant');
@@ -224,7 +214,6 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token invalide ou expiré');
     }
 
-    // Vérifier que l’utilisateur existe et est actif
     const user = await this.userRepository.findOne({
       where: { id: decoded.sub },
       select: ['id', 'email', 'name', 'role', 'status', 'avatar', 'isActive'],
@@ -234,20 +223,17 @@ export class AuthService {
       throw new UnauthorizedException('الحساب غير نشط أو موقوف');
     }
 
-    // Émettre un nouveau couple (rotation optionnelle)
     const payload = { sub: user.id, email: user.email, role: user.role, name: user.name };
     const access_token = this.signAccessToken(payload);
-    // Optionnel: rotation
     const new_refresh_token = this.signRefreshToken({ sub: user.id });
 
     return {
       access_token,
-      refresh_token: new_refresh_token, // si tu veux la rotation côté front
+      refresh_token: new_refresh_token,
       user,
     };
   }
 
-  // … (register, changePassword, resetPassword: n’oublie pas de hasher)
   async register(registerDto: RegisterDto): Promise<User> {
     const existingUser = await this.userRepository.findOne({
       where: { email: registerDto.email.toLowerCase() }

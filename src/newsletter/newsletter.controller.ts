@@ -22,9 +22,6 @@ export class NewsletterController {
   stats() {
     return this.service.getStatistics();
   }
-
-  // ===== PUBLIC =====
-
   @ApiOperation({ summary: "Subscribe (double opt-in)" })
   @Post("subscribe")
   subscribe(@Body() dto: SubscribeNewsletterDto) {
@@ -45,9 +42,6 @@ export class NewsletterController {
     if (body?.email) return this.service.unsubscribeByEmail(body.email);
     throw new BadRequestException("token or email is required");
   }
-
-  // ===== ADMIN =====
-
   @ApiOperation({ summary: "Admin list newsletter subscriptions" })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)

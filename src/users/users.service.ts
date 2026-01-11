@@ -15,6 +15,11 @@ export class UsersService {
     private usersRepository: Repository<User>
   ) {}
 
+  private async hashPassword(password?: string): Promise<string | undefined> {
+    if (!password) return undefined;
+    return bcrypt.hash(password, 10);
+  }
+
   private isPrivileged(me: any): boolean {
     const role = String(me?.role ?? "").toLowerCase();
     return role === UserRole.ADMIN || role === UserRole.EDITOR_IN_CHIEF;
@@ -76,17 +81,21 @@ export class UsersService {
 
   async createWithWorkflow(userData: Partial<User>, me: any): Promise<User> {
     const privileged = this.isPrivileged(me);
+    const creatorId = me?.userId ?? me?.id ?? null;
+    const { password, ...rest } = userData;
+    const hashedPassword = await this.hashPassword(password?.toString());
 
     const user = this.usersRepository.create({
-      ...userData,
-      email: String(userData.email ?? "").toLowerCase().trim(),
-      name: String(userData.name ?? "").trim(),
+      ...rest,
+      ...(hashedPassword ? { password: hashedPassword } : {}),
+      email: String(rest.email ?? "").toLowerCase().trim(),
+      name: String(rest.name ?? "").trim(),
 
-      createdById: me?.id ?? null,
+      createdById: creatorId,
 
       workflowStatus: privileged ? UserWorkflowStatus.PUBLISHED : UserWorkflowStatus.IN_REVIEW,
       submittedAt: privileged ? null : new Date(),
-      submittedById: privileged ? null : (me?.id ?? null),
+      submittedById: privileged ? null : creatorId,
 
       reviewedAt: null,
       reviewedById: null,
@@ -98,8 +107,12 @@ export class UsersService {
   }
 
   async create(userData: Partial<User>): Promise<User> {
-    // garde ta méthode existante si tu en as besoin ailleurs
-    const user = this.usersRepository.create(userData);
+    const { password, ...rest } = userData;
+    const hashedPassword = await this.hashPassword(password?.toString());
+    const user = this.usersRepository.create({
+      ...rest,
+      ...(hashedPassword ? { password: hashedPassword } : {}),
+    });
     return this.usersRepository.save(user);
   }
 
@@ -159,7 +172,10 @@ export class UsersService {
   }
 
   async changePassword(userId: string, currentPassword: string, newPassword: string) {
-    const user = await this.usersRepository.findOne({ where: { id: userId } });
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      select: ["id", "password"],
+    });
     if (!user) throw new NotFoundException("User not found");
 
     const isValid = await bcrypt.compare(currentPassword, user.password);

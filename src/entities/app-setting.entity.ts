@@ -20,7 +20,7 @@ export type EmailSettings = {
   smtpHost: string;
   smtpPort: number;
   smtpUser: string;
-  smtpPassword: string | null; // stockée en DB (tu peux chiffrer si besoin)
+  smtpPassword: string | null;
   senderName: string;
   senderEmail: string;
   enableSSL: boolean;
@@ -40,7 +40,6 @@ export class AppSetting {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  // On force une seule ligne (singleton)
   @Index({ unique: true })
   @Column({ type: "varchar", length: 40, default: "singleton" })
   key: string;

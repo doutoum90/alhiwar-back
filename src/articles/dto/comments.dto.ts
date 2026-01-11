@@ -6,7 +6,6 @@ export class CreateCommentDto {
   content: string;
 }
 
-// ✅ nouveau DTO public (sans user)
 export class CreatePublicCommentDto {
   @IsString()
   @MaxLength(2000)

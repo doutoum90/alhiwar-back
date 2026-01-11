@@ -23,5 +23,5 @@ export class ArticleAuthor {
   user: User;
 
   @Column({ default: false })
-  isMain: boolean; // optionnel
+  isMain: boolean;
 }

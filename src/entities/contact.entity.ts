@@ -47,7 +47,6 @@ export class Contact {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  // Méthode utilitaire pour formater la date
   get formattedDate(): string {
     return this.createdAt.toLocaleDateString("fr-FR", {
       year: "numeric",
@@ -58,7 +57,6 @@ export class Contact {
     });
   }
 
-  // Méthode pour obtenir un extrait du message
   get messageExcerpt(): string {
     if (this.message.length <= 100) return this.message;
     return this.message.substring(0, 100) + '...';

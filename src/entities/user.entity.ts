@@ -67,7 +67,7 @@ export class User {
   name: string;
 
   @Exclude({ toPlainOnly: true })
-  @Column({ type: "varchar" })
+  @Column({ type: "varchar", select: false })
   password: string;
 
   @Column({

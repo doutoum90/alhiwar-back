@@ -1,4 +1,3 @@
-// src/entities/role.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, Index, OneToMany } from "typeorm";
 import { RolePermission } from "./role-permission.entity";
 
@@ -14,7 +13,6 @@ export class Role {
   @Column({ type: "varchar", length: 120 })
   name: string;
 
-  // ✅ pivot
   @OneToMany(() => RolePermission, (rp) => rp.role, { cascade: true })
   rolePermissions: RolePermission[];
 }

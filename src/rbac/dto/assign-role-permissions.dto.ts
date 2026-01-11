@@ -4,13 +4,6 @@ export class AssignRolePermissionsDto {
   @IsArray()
   @ArrayUnique()
   @IsString({ each: true })
-  @ArrayMaxSize(500) // optionnel: limite anti-abus
+  @ArrayMaxSize(500)
   permissionKeys!: string[];
-}
-
-export class AssignUserRolesDto {
-  @IsArray()
-  @ArrayUnique()
-  @IsString({ each: true })
-  roleKeys!: string[];
 }

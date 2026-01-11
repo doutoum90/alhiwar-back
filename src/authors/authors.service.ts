@@ -40,7 +40,6 @@ export class AuthorsService {
       throw new ConflictException('مستخدم بهذا البريد الإلكتروني موجود بالفعل');
     }
 
-    // Sans hash pour simplifier les tests
     const user = this.userRepository.create({
       ...createAuthorDto,
       password: createAuthorDto.password,
@@ -159,7 +158,6 @@ export class AuthorsService {
     return this.findOne(id);
   }
 
-  // ✅ Méthodes manquantes ajoutées
   async searchAuthors(query: string): Promise<User[]> {
     return this.userRepository
       .createQueryBuilder('user')

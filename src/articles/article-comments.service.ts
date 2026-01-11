@@ -33,7 +33,6 @@ export class ArticleCommentsService {
     return saved;
   }
 
-  // ✅ Nouveau : ajout commentaire public (guest)
   async addPublic(articleId: string, dto: CreatePublicCommentDto) {
     const article = await this.articleRepo.findOne({ where: { id: articleId } });
     if (!article) throw new NotFoundException("Article introuvable");
@@ -41,7 +40,6 @@ export class ArticleCommentsService {
     const content = (dto.content ?? "").trim();
     if (!content) throw new ForbiddenException("Contenu vide");
 
-    // 👉 choix: pending par défaut pour modération
     const comment = this.commentRepo.create({
       articleId,
       userId: null,
@@ -64,13 +62,14 @@ export class ArticleCommentsService {
 
     const where: any = { articleId };
 
-    // mapping status via isHidden
     if (!status || status === "visible") {
+      where.status = "visible";
       where.isHidden = false;
     } else if (status === "hidden") {
+      where.status = "hidden";
       where.isHidden = true;
     } else if (status === "pending") {
-      where.isHidden = false;
+      where.status = "pending";
     }
 
     const [items, total] = await this.commentRepo.findAndCount({
@@ -84,7 +83,6 @@ export class ArticleCommentsService {
     return { items, total, page, limit, pages: Math.max(1, Math.ceil(total / limit)) };
   }
 
-  // ✅ Nouveau : listing public (uniquement visible)
   async listPublic(articleId: string, opts: { page: number; limit: number } = { page: 1, limit: 20 }) {
     const page = Math.max(1, Number(opts.page || 1));
     const limit = Math.min(100, Math.max(1, Number(opts.limit || 20)));

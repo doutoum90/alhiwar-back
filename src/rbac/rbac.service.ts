@@ -1,4 +1,3 @@
-// src/rbac/rbac.service.ts
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { In, Repository } from "typeorm";
@@ -18,8 +17,6 @@ export class RbacService {
     @InjectRepository(UserRoleLink) private urRepo: Repository<UserRoleLink>,
   ) {}
 
-  /* ================= LIST ================= */
-
   listRoles() {
     return this.roleRepo.find({ order: { key: "ASC" as any } });
   }
@@ -27,8 +24,6 @@ export class RbacService {
   listPermissions() {
     return this.permRepo.find({ order: { key: "ASC" as any } });
   }
-
-  /* ================= ROLE → PERMISSIONS ================= */
 
   async getRolePermissions(roleId: string) {
     const role = await this.roleRepo.findOne({ where: { id: roleId } });
@@ -54,7 +49,6 @@ export class RbacService {
     };
   }
 
-  // ✅ replace mode : on met EXACTEMENT ce qui est envoyé
   async assignRolePermissions(roleId: string, permissionKeys: string[]) {
     const role = await this.roleRepo.findOne({ where: { id: roleId } });
     if (!role) throw new NotFoundException("Role introuvable");
@@ -65,10 +59,8 @@ export class RbacService {
       ? await this.permRepo.find({ where: { key: In(keys) } })
       : [];
 
-    // supprime tout
     await this.rpRepo.delete({ roleId });
 
-    // réinsère
     if (perms.length) {
       await this.rpRepo.save(
         perms.map((p) => this.rpRepo.create({ roleId: role.id, permissionId: p.id })),
@@ -85,8 +77,6 @@ export class RbacService {
     await this.rpRepo.delete({ roleId, permissionId });
     return { ok: true };
   }
-
-  /* ================= USER → ROLES ================= */
 
   async getUserRoles(userId: string) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
@@ -106,7 +96,6 @@ export class RbacService {
     };
   }
 
-  // ✅ replace mode user roles
   async assignUserRoles(userId: string, roleKeys: string[]) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException("Utilisateur introuvable");

@@ -18,7 +18,7 @@ export class PermissionsGuard implements CanActivate {
         const user = req.user;
 
         const userPerms: string[] = Array.isArray(user?.permissions) ? user.permissions : [];
-        const ok = required.every((p) => userPerms.includes(p)); // ✅ AND
+        const ok = required.every((p) => userPerms.includes(p));
 
         if (!ok) throw new ForbiddenException("Permission refusée");
         return true;

@@ -115,7 +115,6 @@ export class AdsService {
     ad.submittedAt = new Date();
     ad.submittedById = meId ?? null;
 
-    // reset review fields
     ad.reviewedAt = null;
     ad.reviewedById = null;
     ad.reviewComment = null;
