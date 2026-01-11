@@ -21,9 +21,9 @@ import { AuthPermissionsService } from './auth-permissions.service';
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get("JWT_SECRET"),
+        secret: config.get("JWT_ACCESS_SECRET") || config.get("JWT_SECRET"),
         signOptions: {
-          expiresIn: config.get<string>('JWT_EXPIRES_IN') || '15m',
+          expiresIn: config.get<string>('JWT_ACCESS_TTL') || config.get<string>('JWT_EXPIRES_IN') || '15m',
         },
       }),
     })

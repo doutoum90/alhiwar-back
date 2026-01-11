@@ -9,6 +9,7 @@ import { RegisterDto } from "./dto/register.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
+import { ResendVerificationDto } from "./dto/resend-verification.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { CurrentUser } from "./decorators/current-user.decorator";
 import { User, UserRole } from "../entities/user.entity";
@@ -99,6 +100,14 @@ export class AuthController {
   async verifyEmail(@Body("token") token: string) {
     await this.authService.verifyEmail(token);
     return { message: "Email verified successfully" };
+  }
+
+  @ApiOperation({ summary: "Resend email verification" })
+  @Post("resend-verification")
+  @HttpCode(HttpStatus.OK)
+  async resendVerification(@Body() dto: ResendVerificationDto) {
+    await this.authService.resendEmailVerification(dto.email);
+    return { message: "If the email exists, a verification email has been sent" };
   }
 
   @ApiOperation({ summary: "Logout user" })

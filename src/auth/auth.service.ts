@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -10,9 +10,13 @@ import { Request } from 'express';
 import * as bcrypt from 'bcrypt';
 import { cutoffFromPeriod } from "src/stats/period";
 import { randomHex } from "src/utils/crypto";
+import { createHash } from "crypto";
+import * as nodemailer from "nodemailer";
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
@@ -74,30 +78,48 @@ export class AuthService {
     return this.findById(userId);
   }
 
-  async generatePasswordResetToken(email: string): Promise<string> {
+  async generatePasswordResetToken(email: string): Promise<void> {
     const user = await this.userRepository.findOne({
       where: { email: email.toLowerCase() }
     });
 
-    if (!user) {
-      throw new NotFoundException('البريد الإلكتروني غير موجود');
-    }
+    if (!user) return;
 
-    const resetToken = this.generateVerificationToken();
+    const resetToken = randomHex(32);
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 1);
     await this.userRepository.update(user.id, {
-      passwordResetToken: resetToken,
+      passwordResetToken: this.hashToken(resetToken),
       passwordResetExpiresAt: expiresAt,
     });
 
-    return resetToken;
+    const resetUrl = `${this.publicWebUrl()}/auth/reset-password?token=${encodeURIComponent(resetToken)}`;
+    await this.sendEmail(
+      user.email,
+      "Réinitialisation de mot de passe",
+      [
+        "Bonjour,",
+        "",
+        "Vous avez demandé la réinitialisation de votre mot de passe.",
+        `Cliquez sur ce lien pour continuer : ${resetUrl}`,
+        "",
+        "Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.",
+      ].join("\n"),
+      `<p>Bonjour,</p>
+       <p>Vous avez demandé la réinitialisation de votre mot de passe.</p>
+       <p><a href="${resetUrl}">Réinitialiser mon mot de passe</a></p>
+       <p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>`
+    );
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    const user = await this.userRepository.findOne({
-      where: { passwordResetToken: token }
-    });
+    const user =
+      (await this.userRepository.findOne({
+        where: { passwordResetToken: this.hashToken(token) }
+      })) ||
+      (await this.userRepository.findOne({
+        where: { passwordResetToken: token }
+      }));
 
     if (!user || !user.passwordResetExpiresAt || user.passwordResetExpiresAt < new Date()) {
       throw new UnauthorizedException('رمز إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية');
@@ -112,9 +134,13 @@ export class AuthService {
   }
 
   async verifyEmail(token: string): Promise<void> {
-    const user = await this.userRepository.findOne({
-      where: { emailVerificationToken: token }
-    });
+    const user =
+      (await this.userRepository.findOne({
+        where: { emailVerificationToken: this.hashToken(token) }
+      })) ||
+      (await this.userRepository.findOne({
+        where: { emailVerificationToken: token }
+      }));
 
     if (!user) {
       throw new UnauthorizedException('رمز التحقق من البريد الإلكتروني غير صالح');
@@ -141,6 +167,44 @@ export class AuthService {
     return this.jwtService.sign(payload, {
       secret: process.env.JWT_REFRESH_SECRET,
       expiresIn: process.env.JWT_REFRESH_TTL || '7d',
+    });
+  }
+
+  private hashToken(token: string): string {
+    return createHash("sha256").update(token).digest("hex");
+  }
+
+  private publicWebUrl(): string {
+    return process.env.PUBLIC_WEB_URL || "http://localhost:3000";
+  }
+
+  private async sendEmail(to: string, subject: string, text: string, html: string) {
+    const host = process.env.SMTP_HOST;
+    const port = Number(process.env.SMTP_PORT ?? 587);
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASS;
+    const secure = String(process.env.SMTP_SECURE ?? "false") === "true";
+    const fromName = process.env.SMTP_FROM_NAME ?? "Auth";
+    const fromEmail = process.env.SMTP_FROM_EMAIL ?? "no-reply@example.com";
+
+    if (!host || !user || !pass) {
+      this.logger.warn("SMTP not configured. Email not sent.");
+      return;
+    }
+
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      auth: { user, pass },
+    });
+
+    await transporter.sendMail({
+      from: `${fromName} <${fromEmail}>`,
+      to,
+      subject,
+      text,
+      html,
     });
   }
 
@@ -241,15 +305,53 @@ export class AuthService {
     if (existingUser) throw new UnauthorizedException('البريد الإلكتروني مستخدم بالفعل');
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+    const rawVerificationToken = this.generateVerificationToken();
     const user = this.userRepository.create({
       ...registerDto,
       email: registerDto.email.toLowerCase(),
       password: hashedPassword,
-      emailVerificationToken: this.generateVerificationToken(),
+      emailVerificationToken: this.hashToken(rawVerificationToken),
     });
     const savedUser = await this.userRepository.save(user);
+    const verifyUrl = `${this.publicWebUrl()}/auth/verify-email?token=${encodeURIComponent(rawVerificationToken)}`;
+    await this.sendEmail(
+      savedUser.email,
+      "Vérification d'email",
+      [
+        "Bonjour,",
+        "",
+        "Merci pour votre inscription.",
+        `Confirmez votre email ici : ${verifyUrl}`,
+      ].join("\n"),
+      `<p>Bonjour,</p><p>Merci pour votre inscription.</p><p><a href="${verifyUrl}">Confirmer mon email</a></p>`
+    );
     const { password, ...result } = savedUser;
     return result as User;
+  }
+
+  async resendEmailVerification(email: string): Promise<void> {
+    const user = await this.userRepository.findOne({
+      where: { email: email.toLowerCase() }
+    });
+    if (!user || user.emailVerifiedAt) return;
+
+    const rawVerificationToken = this.generateVerificationToken();
+    await this.userRepository.update(user.id, {
+      emailVerificationToken: this.hashToken(rawVerificationToken),
+    });
+
+    const verifyUrl = `${this.publicWebUrl()}/auth/verify-email?token=${encodeURIComponent(rawVerificationToken)}`;
+    await this.sendEmail(
+      user.email,
+      "Vérification d'email",
+      [
+        "Bonjour,",
+        "",
+        "Voici votre lien de vérification.",
+        `Confirmez votre email ici : ${verifyUrl}`,
+      ].join("\n"),
+      `<p>Bonjour,</p><p>Voici votre lien de vérification.</p><p><a href="${verifyUrl}">Confirmer mon email</a></p>`
+    );
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
@@ -269,7 +371,8 @@ export class AuthService {
   async verifyTokenRaw(token: string, ignoreExpiration = false) {
     if (!token) throw new UnauthorizedException('Token manquant');
     try {
-      const payload = await this.jwtService.verifyAsync(token, { ignoreExpiration });
+      const secret = process.env.JWT_ACCESS_SECRET ?? process.env.JWT_SECRET;
+      const payload = await this.jwtService.verifyAsync(token, { ignoreExpiration, secret });
       return { valid: true, payload };
     } catch {
       throw new UnauthorizedException('Token invalide ou expiré');
