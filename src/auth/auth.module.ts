@@ -1,36 +1,35 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { JwtModule } from '@nestjs/jwt';
-import { UserModule } from '../user/user.module';
+import { User } from '../entities/user.entity';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { LocalStrategy } from './strategies/local.strategy';
+import { RolesGuard } from './guards/roles.guard';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { UserAuthGuard } from './guards/user-auth.guard';
+import { RbacModule } from './rbac.module';
+import { AuthPermissionsService } from './auth-permissions.service';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([User]),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    RbacModule,
     ConfigModule,
     JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (config: ConfigService) => {
-        const secret = config.get<string>('JWT_SECRET');
-        if (!secret) {
-          throw new Error('JWT_SECRET manquant dans .env !');
-        }
-        const refreshSecret = config.get<string>('JWT_REFRESH_SECRET');
-        if (!refreshSecret) {
-          throw new Error('JWT_REFRESH_SECRET manquant dans .env !');
-        }
-        return {
-          secret,
-          signOptions: { expiresIn: '15m' }
-        };
-      },
-      inject: [ConfigService]
-    }),
-    forwardRef(() => UserModule),
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get("JWT_SECRET"),
+        signOptions: {
+          expiresIn: config.get<string>('JWT_EXPIRES_IN') || '15m',
+        },
+      }),
+    })
   ],
-  providers: [AuthService, UserAuthGuard],
+  providers: [AuthService, JwtStrategy, LocalStrategy, RolesGuard, AuthPermissionsService],
   controllers: [AuthController],
-  exports: [JwtModule, UserAuthGuard],
+  exports: [AuthService, JwtStrategy, PassportModule, RolesGuard],
 })
 export class AuthModule { }

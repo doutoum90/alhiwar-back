@@ -1,51 +1,41 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import * as dotenv from 'dotenv';
 import { ValidationPipe, Logger } from '@nestjs/common';
+import { AppModule } from './app.module';
+import { join } from "path";
+import * as dotenv from 'dotenv';
+import { NestExpressApplication } from '@nestjs/platform-express'; // ✅
 
 const logger = new Logger('Bootstrap');
-
 dotenv.config();
 
 async function bootstrap() {
-  logger.log('Démarrage de l’application...');
-  logger.log(`NODE_ENV: ${process.env.NODE_ENV || 'non défini'}`);
-  logger.log(`DATABASE_URL: ${process.env.DATABASE_URL || 'non défini'}`);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule); // ✅
 
-  try {
-    logger.log('Création de l’instance NestJS...');
-    const app = await NestFactory.create(AppModule);
-    logger.log('Instance NestJS créée avec succès');
+  app.enableCors({
+    origin: ['http://localhost:3000', 'http://localhost:5173'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
 
-    app.enableCors({
-      // origin: process.env.NODE_ENV === 'production' ? 'https://front-r396.onrender.com' : 'http://localhost:5173',
-      origin: '*',
-      allowedHeaders: ['Content-Type', 'Authorization'],
-      methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    });
-    logger.log('CORS configuré');
+  app.setGlobalPrefix('api');
 
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }),
-    );
-    logger.log('Pipes globaux configurés');
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
-    const port = process.env.PORT || 3000;
-    logger.log(`Tentative de liaison au port ${port}...`);
-    await app.listen(port);
-    logger.log(`Application démarrée sur le port ${port}`);
-  } catch (error: any) {
-    console.error('Erreur brute:', error);
-    logger.error('Erreur lors du démarrage', error.stack || error.message || error);
-    throw error;
-  }
+  // ✅ expose /uploads/*
+  app.useStaticAssets(join(process.cwd(), "uploads"), {
+    prefix: "/uploads",
+  });
+
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+  logger.log(`Application démarrée sur le port ${port}`);
 }
 
-bootstrap().catch((error) => {
-  console.error('Erreur critique:', error);
-  logger.error('Erreur critique dans bootstrap', error.stack || error.message || error);
-});
+bootstrap();

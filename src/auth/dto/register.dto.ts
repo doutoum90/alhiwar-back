@@ -1,37 +1,19 @@
-import { IsEmail, IsString, MinLength, IsNotEmpty, IsOptional, IsEnum, IsBoolean, IsDateString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDto {
-    @IsEmail()
-    @IsNotEmpty()
-    email: string;
+  @ApiProperty({ example: 'أحمد محمد' })
+  @IsNotEmpty({ message: 'الاسم مطلوب' })
+  @IsString()
+  @MaxLength(100, { message: 'الاسم طويل جداً' })
+  name: string;
 
-    @IsString()
-    @MinLength(8, { message: 'Password must be at least 8 characters long' })
-    @IsNotEmpty()
-    password: string;
+  @ApiProperty({ example: 'ahmed@example.com' })
+  @IsEmail({}, { message: 'البريد الإلكتروني غير صحيح' })
+  email: string;
 
-    @IsString()
-    @IsNotEmpty()
-    name: string;
-
-    @IsString()
-    @IsNotEmpty()
-    lastname: string;
-
-    @IsDateString()
-    @IsNotEmpty()
-    dateOfBirth: string;
-
-    @IsString()
-    @IsNotEmpty()
-    profession: string;
-
-    @IsEnum(['Essentiel', 'PRO', 'Expert'])
-    @IsOptional()
-    typeAbonnement?: 'Essentiel' | 'PRO' | 'Expert';
-
-    @IsBoolean()
-    @IsOptional()
-    trialActive?: boolean;
+  @ApiProperty({ example: 'password123' })
+  @IsNotEmpty({ message: 'كلمة المرور مطلوبة' })
+  @MinLength(6, { message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' })
+  password: string;
 }
-  

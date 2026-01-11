@@ -1,32 +1,51 @@
-version: '3'
-
 services:
   database:
     image: postgres:16-alpine
-    volumes:
-      - db-data:/var/lib/postgresql/data:rw
+    container_name: alhiwar_db
     environment:
-      POSTGRES_DB: parametrage
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: alhiwar
       POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
-      - '5434:5432'
+      - "5434:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
     networks:
       - postgres
+
   pgadmin:
     image: dpage/pgadmin4
+    container_name: alhiwar_pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
     volumes:
       - pgadmin:/var/lib/pgadmin
-
-    ports:
-      - '${PGADMIN_PORT:-5050}:80'
     networks:
       - postgres
     restart: unless-stopped
+
+  db_backup:
+    image: postgres:16-alpine
+    container_name: alhiwar_db_backup
+    depends_on:
+      - database
+    environment:
+      POSTGRES_DB: alhiwar
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db-backups:/backups
+    networks:
+      - postgres
+    entrypoint: >
+      sh -c "
+      mkdir -p /backups &&
+      pg_dump -h database -U postgres alhiwar > /backups/backup_$(date +%Y-%m-%d_%H-%M-%S).sql
+      "
 
 networks:
   postgres:
@@ -35,3 +54,4 @@ networks:
 volumes:
   db-data:
   pgadmin:
+  db-backups:

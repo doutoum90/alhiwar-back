@@ -1,10 +1,20 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserModule } from './user/user.module';
-import { ReportsModule } from './reports/reports.module';
-import { PaymentsModule } from './payments/payments.module';
+
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { ArticlesModule } from './articles/articles.module';
+import { CategoriesModule } from './categories/categories.module';
+import { AdsModule } from './ads/ads.module';
+
 import { Logger } from '@nestjs/common';
-import { StaticPagesModule } from './static-pages/static-pages.module';
+import { AuthorsModule } from './authors/authors.module';
+import { ContactModule } from './contact/contact.module';
+import { SettingModule } from './setting/setting.module';
+import { NewsletterModule } from './newsletter/newsletter.module';
+import { RbacModule } from './rbac/rbac.module';
 
 const logger = new Logger('AppModule');
 
@@ -16,18 +26,26 @@ const logger = new Logger('AppModule');
       port: parseInt(process.env.DB_PORT || '5434'),
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
-      database: process.env.DB_NAME || 'parametrage',
+      database: process.env.DB_NAME || 'alhiwar',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: process.env.NODE_ENV !== 'production',
       logging: process.env.NODE_ENV !== 'production',
     }),
-    UserModule,
-    ReportsModule,
-    PaymentsModule,
-    StaticPagesModule,
+    AuthModule,
+    UsersModule,
+    ArticlesModule,
+    CategoriesModule,
+    AdsModule,
+    AuthorsModule,
+    ContactModule,
+    ConfigModule.forRoot({
+      isGlobal: true, // ✅ rend ConfigService dispo partout
+    }),
+    SettingModule,
+    NewsletterModule,
+    RbacModule,
   ],
   controllers: [],
-  providers: [],
 })
 export class AppModule {
   constructor() {
