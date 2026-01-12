@@ -104,6 +104,10 @@ export class Ad {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Index()
+  @Column({ type: "varchar", length: 80, nullable: true })
+  placementKey: string | null;
+
   get ctr(): number {
     return this.impressions > 0 ? (this.clicks / this.impressions) * 100 : 0;
   }

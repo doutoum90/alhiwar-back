@@ -23,6 +23,7 @@ import { ArticleAuthor } from "../entities/article-author.entity";
 import { ArticleMedia } from "../entities/article-media.entity";
 import { ArticleLike } from "../entities/article-like.entity";
 import { ArticleComment } from "../entities/article-comment.entity";
+import { AdPlacement } from "../entities/ad-placement.entity";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -54,6 +55,7 @@ export const AppDataSource = new DataSource({
     ArticleMedia,
     ArticleLike,
     ArticleComment,
+    AdPlacement,
   ],
 
   migrations: [

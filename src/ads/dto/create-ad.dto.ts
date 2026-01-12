@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsOptional, IsEnum, IsDateString, IsUrl } from "class-validator";
+import { IsNotEmpty, IsString, IsOptional, IsEnum, IsDateString, IsUrl, MaxLength, Matches } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { AdType } from "../../entities/ad.entity";
 import { Transform } from "class-transformer";
@@ -60,4 +60,15 @@ export class CreateAdDto {
   @IsDateString({}, { message: "Invalid endDate" })
   @Transform(({ value }) => (value ? new Date(value).toISOString() : null))
   endDate?: string | null;
+
+  @ApiProperty({
+    required: false,
+    example: "home_sidebar_top",
+    description: "Optional placement key to target a specific slot",
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  @Matches(/^[a-z0-9_]+$/, { message: "placementKey must be lowercase letters/numbers/underscore" })
+  placementKey?: string | null;
 }

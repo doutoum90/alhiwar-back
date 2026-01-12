@@ -7,7 +7,7 @@ import { UpdateAdDto } from "./dto/update-ad.dto";
 
 @Injectable()
 export class AdsService {
-  constructor(@InjectRepository(Ad) private adRepository: Repository<Ad>) {}
+  constructor(@InjectRepository(Ad) private adRepository: Repository<Ad>) { }
 
   /* ======================= CRUD ======================= */
 
@@ -18,6 +18,8 @@ export class AdsService {
       image: dto.image ?? null,
       link: dto.link ?? null,
       type: dto.type ?? AdType.BANNER,
+      placementKey: dto.placementKey ?? null,
+
       startDate: dto.startDate ? new Date(dto.startDate) : null,
       endDate: dto.endDate ? new Date(dto.endDate) : null,
 
@@ -35,9 +37,7 @@ export class AdsService {
   }
 
   async findAll(): Promise<Ad[]> {
-    return this.adRepository.find({
-      order: { createdAt: "DESC" },
-    });
+    return this.adRepository.find({ order: { createdAt: "DESC" } });
   }
 
   async findOne(id: string): Promise<Ad> {
@@ -56,6 +56,10 @@ export class AdsService {
     if (dto.link !== undefined) ad.link = dto.link ?? null;
 
     if (dto.type !== undefined) ad.type = dto.type;
+
+    if ((dto as any).placementKey !== undefined) {
+      ad.placementKey = (dto as any).placementKey ?? null;
+    }
 
     if (dto.startDate !== undefined) ad.startDate = dto.startDate ? new Date(dto.startDate) : null;
     if (dto.endDate !== undefined) ad.endDate = dto.endDate ? new Date(dto.endDate) : null;
@@ -88,6 +92,19 @@ export class AdsService {
     return this.adRepository
       .createQueryBuilder("ad")
       .where("ad.type = :type", { type })
+      .andWhere("ad.status = :status", { status: AdWorkflowStatus.PUBLISHED })
+      .andWhere("(ad.startDate IS NULL OR ad.startDate <= :now)", { now })
+      .andWhere("(ad.endDate IS NULL OR ad.endDate >= :now)", { now })
+      .orderBy("ad.createdAt", "DESC")
+      .getMany();
+  }
+
+  async findPublishedByPlacementKey(placementKey: string): Promise<Ad[]> {
+    const now = new Date();
+
+    return this.adRepository
+      .createQueryBuilder("ad")
+      .where("ad.placementKey = :placementKey", { placementKey })
       .andWhere("ad.status = :status", { status: AdWorkflowStatus.PUBLISHED })
       .andWhere("(ad.startDate IS NULL OR ad.startDate <= :now)", { now })
       .andWhere("(ad.endDate IS NULL OR ad.endDate >= :now)", { now })

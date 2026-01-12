@@ -37,6 +37,13 @@ export class AdsController {
     return this.adsService.findPublishedActive();
   }
 
+  @ApiOperation({ summary: "Get published ads by placementKey (public)" })
+  @Get("placement")
+  @ApiQuery({ name: "key", required: true })
+  findPublishedByPlacement(@Query("key") key: string) {
+    return this.adsService.findPublishedByPlacementKey(String(key || "").trim());
+  }
+
   @ApiOperation({ summary: "Get published ads by type (public)" })
   @Get("type/:type")
   @ApiParam({ name: "type", enum: AdType })
@@ -181,13 +188,16 @@ export class AdsController {
     return this.adsService.recordImpression(id);
   }
 
-  /* ======================= ITEM (UUID LAST) ======================= */
-
+  /* ======================= ITEM (UUID SAFE) ======================= */
+  /**
+   * IMPORTANT:
+   * We DO NOT use @Get(":id") here anymore, to avoid collisions with /ads/placements, /ads/stats, etc.
+   */
   @ApiOperation({ summary: "Get ad by ID (admin)" })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @RequirePermissions("ads.view")
-  @Get(":id")
+  @Get("by-id/:id")
   findOne(@Param("id", ParseUUIDPipe) id: string) {
     return this.adsService.findOne(id);
   }
